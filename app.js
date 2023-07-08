@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get("/", async (req, res) => {
-  res.send("puber api :)");
+  res.send("N.J.O.Y :)");
 });
 
 app.use("/", authRouter);
