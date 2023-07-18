@@ -19,9 +19,13 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      nama: {
+      santri_uuid: {
         allowNull: false,
         type: DataTypes.STRING,
+      },
+      blok_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
       },
       username: {
         allowNull: false,
@@ -33,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       role: {
         allowNull: false,
-        values: ["sysadmin", "admin"],
+        values: ["sysadmin", "admin", "wilayah"],
         type: DataTypes.ENUM,
       },
       createdAt: {

@@ -9,9 +9,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      nama: {
+      santri_uuid: {
         allowNull: false,
         type: Sequelize.STRING,
+      },
+      blok_id: {
+        allowNull: true,
+        type: Sequelize.INTEGER,
       },
       username: {
         allowNull: false,
@@ -23,7 +27,7 @@ module.exports = {
       },
       role: {
         allowNull: false,
-        values: ["sysadmin", "admin"],
+        values: ["sysadmin", "admin", "wilayah"],
         type: Sequelize.ENUM,
       },
       created_at: {

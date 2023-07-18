@@ -3,9 +3,8 @@ const { User } = require("../../models");
 const authValidation = require("../../validations/auth-validation");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-// const axios = require("axios");
-// const { JWT_SECRET_KEY, API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
-const { JWT_SECRET_KEY } = process.env;
+const axios = require("axios");
+const { JWT_SECRET_KEY, API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const responseHelper = require("../../helpers/response-helper");
 
 module.exports = {
@@ -36,7 +35,7 @@ module.exports = {
                 username: data.username,
                 // active: data.active,
                 role: data.role,
-                // blok_id: data.blok_id,
+                blok_id: data.blok_id,
               },
               JWT_SECRET_KEY,
               {
@@ -44,17 +43,17 @@ module.exports = {
               }
             );
 
-            // const response = await axios.get(
-            //   API_PEDATREN_URL + "/person/" + data.santri_uuid,
-            //   {
-            //     headers: {
-            //       "x-api-key": API_PEDATREN_TOKEN,
-            //     },
-            //   }
-            // );
+            const response = await axios.get(
+              API_PEDATREN_URL + "/person/" + data.santri_uuid,
+              {
+                headers: {
+                  "x-api-key": API_PEDATREN_TOKEN,
+                },
+              }
+            );
 
-            // responseHelper.auth(res, token, data, response.data);
-            responseHelper.auth(res, token, data);
+            responseHelper.auth(res, token, data, response.data);
+            // responseHelper.auth(res, token, data);
           }
         }
       }

@@ -53,13 +53,13 @@ module.exports = {
   },
 
   //   response untuk get satu data dengan data dari pedatren
-  auth: (res, token, data, user) => {
+  auth: (res, token, data, santri) => {
     res.status(200).json({
       code: 200,
       message: "Authorized",
       token: token,
       data: data,
-      // user: user,
+      santri: santri,
     });
   },
 
