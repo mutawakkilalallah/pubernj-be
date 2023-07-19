@@ -6,7 +6,7 @@ const cors = require("cors");
 const port = process.env.PORT;
 
 const auth = require("./middleware/authentication");
-// const guard = require("./middleware/authorization");
+const guard = require("./middleware/authorization");
 
 const authRouter = require("./src/auth/router");
 
@@ -14,9 +14,9 @@ const dashboardRouter = require("./src/dashboard/router");
 const areaRouter = require("./src/area/router");
 const dropspotRouter = require("./src/dropspot/router");
 const santriRouter = require("./src/santri/router");
+const userRouter = require("./src/user/router");
 // const busRouter = require("./src/bus/router");
 // const passengerRouter = require("./src/passenger/router");
-// const userRouter = require("./src/user/router");
 // const homeRouter = require("./src/home/router");
 
 app.use(
@@ -39,11 +39,11 @@ app.use("/", authRouter);
 app.use("/dashboard", auth, dashboardRouter);
 app.use("/area", auth, areaRouter);
 app.use("/dropspot", auth, dropspotRouter);
-// app.use("/santri-pulang", homeRouter);
 app.use("/santri", auth, santriRouter);
+app.use("/user", userRouter);
+// app.use("/santri-pulang", homeRouter);
 // app.use("/bus", auth, busRouter);
 // app.use("/passenger", auth, passengerRouter);
-// app.use("/user", auth, guard, userRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

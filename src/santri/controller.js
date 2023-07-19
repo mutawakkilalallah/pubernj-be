@@ -18,7 +18,10 @@ module.exports = {
           page: page,
           limit: limit,
           cari: search,
-          blok: req.role != "admin" ? req.blok_id : null,
+          blok:
+            req.role === "wilayah" || req.role === "daerah"
+              ? req.blok_id
+              : null,
         },
       });
       responseHelper.allDataWithPedatren(res, page, limit, data);

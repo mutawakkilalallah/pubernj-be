@@ -1,7 +1,6 @@
 const express = require("express");
 const { getAll, getById, create, update, destroy } = require("./controller");
 const router = express.Router();
-const guard = require("../../middleware/authorization");
 
 router.get("/", getAll);
 
