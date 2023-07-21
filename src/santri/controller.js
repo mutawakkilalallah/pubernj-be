@@ -55,6 +55,8 @@ module.exports = {
 
   getImage: async (req, res) => {
     try {
+      const type = req.query.size;
+
       const santri = await axios.get(
         API_PEDATREN_URL + "/person/" + req.params.uuid,
         {
@@ -64,16 +66,40 @@ module.exports = {
         }
       );
 
-      const response = await axios.get(
-        API_PEDATREN_URL + santri.data.fotodiri.medium,
-        {
-          headers: {
-            "x-api-key": API_PEDATREN_TOKEN,
-          },
-          responseType: "arraybuffer",
-        }
-      );
-      responseHelper.imageWithPedatren(res, response.data);
+      if (type === "small") {
+        const response = await axios.get(
+          API_PEDATREN_URL + santri.data.fotodiri.small,
+          {
+            headers: {
+              "x-api-key": API_PEDATREN_TOKEN,
+            },
+            responseType: "arraybuffer",
+          }
+        );
+        responseHelper.imageWithPedatren(res, response.data);
+      } else if (type === "medium") {
+        const response = await axios.get(
+          API_PEDATREN_URL + santri.data.fotodiri.medium,
+          {
+            headers: {
+              "x-api-key": API_PEDATREN_TOKEN,
+            },
+            responseType: "arraybuffer",
+          }
+        );
+        responseHelper.imageWithPedatren(res, response.data);
+      } else {
+        const response = await axios.get(
+          API_PEDATREN_URL + santri.data.fotodiri.normal,
+          {
+            headers: {
+              "x-api-key": API_PEDATREN_TOKEN,
+            },
+            responseType: "arraybuffer",
+          }
+        );
+        responseHelper.imageWithPedatren(res, response.data);
+      }
     } catch (err) {
       responseHelper.serverError(
         res,
