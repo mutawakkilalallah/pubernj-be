@@ -65,7 +65,7 @@ module.exports = {
       );
 
       const response = await axios.get(
-        API_PEDATREN_URL + santri.data.fotodiri.small,
+        API_PEDATREN_URL + santri.data.fotodiri.medium,
         {
           headers: {
             "x-api-key": API_PEDATREN_TOKEN,
