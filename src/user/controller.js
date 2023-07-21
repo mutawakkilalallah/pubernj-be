@@ -33,7 +33,7 @@ module.exports = {
 
       const filterRole = [
         { key: "sysadmin", value: "Sysadmin" },
-        { key: "admin", value: "Admin" },
+        { key: "wilayah", value: "Wilayah" },
       ];
 
       responseHelper.allData(res, page, limit, data, { role: filterRole });
@@ -71,9 +71,7 @@ module.exports = {
 
   create: async (req, res) => {
     try {
-      const { error, value } = userValidation.createAndUpdate.validate(
-        req.body
-      );
+      const { error, value } = userValidation.create.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(res, error.message);
@@ -96,7 +94,6 @@ module.exports = {
           );
 
           value.password = await bcrypt.hash(value.password, 10);
-          value.is_active = true;
           if (value.role != "wilayah") {
             value.blok_id = null;
           } else {
@@ -127,9 +124,7 @@ module.exports = {
       if (!user) {
         responseHelper.notFound(res);
       } else {
-        const { error, value } = userValidation.createAndUpdate.validate(
-          req.body
-        );
+        const { error, value } = userValidation.update.validate(req.body);
 
         if (error) {
           responseHelper.badRequest(res, error.message);
@@ -142,9 +137,6 @@ module.exports = {
               },
             }
           );
-
-          value.password = await bcrypt.hash(value.password, 10);
-          value.is_active = true;
           if (value.role != "wilayah") {
             value.blok_id = null;
           } else {
@@ -153,6 +145,36 @@ module.exports = {
                 response.data.domisili_santri.length - 1
               ].id_blok;
           }
+
+          await user.update(value);
+
+          responseHelper.createdOrUpdated(res);
+        }
+      }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  updatePassword: async (req, res) => {
+    try {
+      const user = await User.findOne({
+        where: {
+          id: req.params.id,
+        },
+      });
+
+      if (!user) {
+        responseHelper.notFound(res);
+      } else {
+        const { error, value } = userValidation.updatePassword.validate(
+          req.body
+        );
+
+        if (error) {
+          responseHelper.badRequest(res, error.message);
+        } else {
+          value.password = await bcrypt.hash(value.password, 10);
 
           await user.update(value);
 
