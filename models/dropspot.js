@@ -43,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
       harga: {
         allowNull: false,
         type: DataTypes.INTEGER,
-        defaultValue: 1000,
       },
       createdAt: {
         allowNull: false,

@@ -19,9 +19,9 @@ module.exports = {
       "string.empty": "cakupan harus tidak boleh kosong",
       "any.required": "cakupan harus harus diisi",
     }),
-    // harga: Joi.number().integer().required().messages({
-    //   "number.base": "harga harus berisi angka",
-    //   "any.required": "harga harus harus diisi",
-    // }),
+    harga: Joi.number().integer().required().messages({
+      "number.base": "harga harus berisi angka",
+      "any.required": "harga harus harus diisi",
+    }),
   }),
 };

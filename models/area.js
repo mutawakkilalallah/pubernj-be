@@ -26,12 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       pic: {
         allowNull: false,
         type: DataTypes.STRING,
-        defaultValue: "Sibeh",
       },
       no_hp: {
         allowNull: false,
         type: DataTypes.BIGINT,
-        defaultValue: "404",
       },
       createdAt: {
         allowNull: false,
