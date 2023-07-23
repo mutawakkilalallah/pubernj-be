@@ -39,26 +39,22 @@ module.exports = {
               },
               JWT_SECRET_KEY,
               {
-                expiresIn: "30m",
+                expiresIn: "12h",
               }
             );
+            data.raw = JSON.parse(data.raw);
 
-            const response = await axios.get(
-              API_PEDATREN_URL + "/person/" + data.santri_uuid,
-              {
-                headers: {
-                  "x-api-key": API_PEDATREN_TOKEN,
-                },
-              }
-            );
-
-            responseHelper.auth(res, token, data, response.data);
+            responseHelper.auth(res, token, data);
             // responseHelper.auth(res, token, data);
           }
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(
+        res,
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
+      );
     }
   },
 };

@@ -31,6 +31,10 @@ module.exports = {
         offset: offset,
       });
 
+      data.rows.map((d) => {
+        d.raw = JSON.parse(d.raw);
+      });
+
       const filterRole = [
         { key: "sysadmin", value: "Sysadmin" },
         { key: "wilayah", value: "Wilayah" },
@@ -53,16 +57,8 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(res);
       } else {
-        const response = await axios.get(
-          API_PEDATREN_URL + "/person/" + data.santri_uuid,
-          {
-            headers: {
-              "x-api-key": API_PEDATREN_TOKEN,
-            },
-          }
-        );
-
-        responseHelper.oneDataWithPedatren(res, data, response.data);
+        data.raw = JSON.parse(data.raw);
+        responseHelper.oneData(res, data);
       }
     } catch (err) {
       responseHelper.serverError(res, err.message);
@@ -102,6 +98,9 @@ module.exports = {
                 response.data.domisili_santri.length - 1
               ].id_blok;
           }
+
+          value.santri_nama = response.data.nama_lengkap;
+          value.raw = JSON.stringify(response.data);
 
           await User.create(value);
 

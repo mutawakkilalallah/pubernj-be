@@ -8,6 +8,9 @@ module.exports = {
       "string.empty": "nama harus tidak boleh kosong",
       "any.required": "nama harus harus diisi",
     }),
+    type: Joi.required().messages({
+      "any.required": "type harus harus diisi",
+    }),
     area_id: Joi.required().messages({
       "any.required": "areaId harus harus diisi",
     }),

@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Dropspot extends Model {
+  class Penumpang extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Dropspot.init(
+  Penumpang.init(
     {
       id: {
         allowNull: false,
@@ -19,30 +19,52 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      area_id: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
-        references: {
-          model: "Area",
-          key: "id",
-        },
-      },
-      nama: {
+      santri_uuid: {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      type: {
+      santri_niup: {
+        allowNull: false,
+        type: DataTypes.BIGINT,
+      },
+      santri_nama: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
+      santri_wilayah: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
+      santri_blok: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
+      blok_id: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+      },
+      dropspot_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      bus_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      jumlah_bayar: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      status_bayar: {
         allowNull: false,
         type: DataTypes.ENUM,
-        values: ["by_provinsi", "by_kabupaten", "by_kecamatan"],
+        values: ["belum-lunas", "kurang", "lebih", "lunas"],
+        defaultValue: "belum-lunas",
       },
-      cakupan: {
+      raw: {
         allowNull: false,
-        type: DataTypes.STRING,
-      },
-      harga: {
-        allowNull: false,
-        type: DataTypes.INTEGER,
+        type: DataTypes.TEXT,
       },
       createdAt: {
         allowNull: false,
@@ -57,10 +79,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Dropspot",
+      modelName: "Penumpang",
       timestamps: true,
-      tableName: "dropspot",
+      tableName: "penumpang",
     }
   );
-  return Dropspot;
+  return Penumpang;
 };

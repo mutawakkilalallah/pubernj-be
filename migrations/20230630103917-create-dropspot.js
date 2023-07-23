@@ -21,6 +21,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      type: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        values: ["by_provinsi", "by_kabupaten", "by_kecamatan"],
+      },
       cakupan: {
         allowNull: false,
         type: Sequelize.STRING,

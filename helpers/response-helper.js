@@ -1,5 +1,20 @@
 module.exports = {
-  // response untuk get semua data
+  // response untuk get semua data setup
+  allDataSetup: (res, data) => {
+    res.status(200).json({
+      code: 200,
+      message: "Setup Berhasil",
+      data: data,
+    });
+  },
+
+  syncSuccess: (res) => {
+    res.status(201).json({
+      code: 201,
+      message: "Sinkronasi dengan PEDATREN berhasil",
+    });
+  },
+
   allData: (res, page, limit, data, filter = []) => {
     res
       .status(200)
@@ -28,7 +43,7 @@ module.exports = {
       })
       .json({
         code: 200,
-        message: "Berhasil mendapatkan data santri",
+        message: "Berhasil mendapatkan semua data",
         data: data.data,
       });
   },
@@ -56,14 +71,13 @@ module.exports = {
   auth: (res, token, data, santri) => {
     res.status(200).json({
       code: 200,
-      message: "Authorized",
+      message: "Berhasil login",
       token: token,
       data: data,
-      santri: santri,
     });
   },
 
-  //   response untuk get satu data dengan data dari pedatren
+  //   response untuk get image dari pedatren
   imageWithPedatren: (res, data) => {
     res.contentType("image/jpeg").send(Buffer.from(data, "binary"));
   },
@@ -73,7 +87,7 @@ module.exports = {
     res.status(404).json({
       code: 404,
       message: "Not Found",
-      error: "Data Tidak ditemukan",
+      error: "Data tidak ditemukan",
     });
   },
 
@@ -96,8 +110,8 @@ module.exports = {
 
   //   response untuk menghapus data
   deleted: (res) => {
-    res.status(200).json({
-      code: 200,
+    res.status(204).json({
+      code: 204,
       message: "Berhasil menghapus data",
     });
   },
@@ -107,7 +121,7 @@ module.exports = {
     res.status(401).json({
       code: 401,
       message: "Unauthorized",
-      error: "invalid credentials",
+      error: "Username / Password Salah",
     });
   },
 
@@ -116,7 +130,7 @@ module.exports = {
     res.status(403).json({
       code: 403,
       message: "Forbidden",
-      error: "anda tidak memiliki akses",
+      error: "Anda tidak memiliki akses",
     });
   },
 
@@ -124,7 +138,7 @@ module.exports = {
   serverError: (res, error) => {
     res.status(500).json({
       code: 500,
-      message: "Internal Server Error",
+      message: "Terjadi kesalahan pada server",
       error: error,
     });
   },

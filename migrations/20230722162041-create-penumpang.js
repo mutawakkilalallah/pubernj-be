@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("user", {
+    await queryInterface.createTable("penumpang", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -13,26 +13,44 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      santri_niup: {
+        allowNull: false,
+        type: Sequelize.BIGINT,
+      },
       santri_nama: {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      santri_wilayah: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
+      santri_blok: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
       blok_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+      },
+      dropspot_id: {
         allowNull: true,
         type: Sequelize.INTEGER,
       },
-      username: {
-        allowNull: false,
-        type: Sequelize.STRING,
+      bus_id: {
+        allowNull: true,
+        type: Sequelize.INTEGER,
       },
-      password: {
+      jumlah_bayar: {
         allowNull: false,
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
-      role: {
+      status_bayar: {
         allowNull: false,
-        values: ["sysadmin", "admin", "wilayah"],
         type: Sequelize.ENUM,
+        values: ["belum-lunas", "kurang", "lebih", "lunas"],
+        defaultValue: "belum-lunas",
       },
       raw: {
         allowNull: false,
@@ -49,6 +67,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("user");
+    await queryInterface.dropTable("penumpang");
   },
 };

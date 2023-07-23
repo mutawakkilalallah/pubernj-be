@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      santri_nama: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
       blok_id: {
         allowNull: true,
         type: DataTypes.INTEGER,
@@ -39,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         values: ["sysadmin", "admin", "wilayah"],
         type: DataTypes.ENUM,
+      },
+      raw: {
+        allowNull: false,
+        type: DataTypes.TEXT,
       },
       createdAt: {
         allowNull: false,
