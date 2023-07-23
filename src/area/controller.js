@@ -8,7 +8,7 @@ module.exports = {
     try {
       const search = req.query.cari || "";
       const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 25;
+      const limit = parseInt(req.query.limit) || 200;
       const offset = 0 + (page - 1) * limit;
 
       const areas = await Area.findAndCountAll({
