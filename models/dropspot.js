@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       type: {
         allowNull: false,
         type: DataTypes.ENUM,
-        values: ["by_provinsi", "by_kabupaten", "by_kecamatan"],
+        values: ["by_provinsi", "by_kabupaten", "by_kecamatan", "by_desa"],
       },
       cakupan: {
         allowNull: false,
