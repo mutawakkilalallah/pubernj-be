@@ -24,7 +24,13 @@ module.exports = {
       type: {
         allowNull: false,
         type: Sequelize.ENUM,
-        values: ["by_provinsi", "by_kabupaten", "by_kecamatan", "by_desa"],
+        values: [
+          "by_negara",
+          "by_provinsi",
+          "by_kabupaten",
+          "by_kecamatan",
+          "by_desa",
+        ],
       },
       cakupan: {
         allowNull: false,
