@@ -2,37 +2,37 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("dropspot", {
-      id: {
+    await queryInterface.createTable("santri", {
+      uuid: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
       },
-      area_id: {
+      niup: {
         allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: "area",
-          key: "id",
-        },
+        type: Sequelize.BIGINT,
       },
-      nama: {
+      nama_lengkap: {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      type: {
-        allowNull: false,
-        type: Sequelize.ENUM,
-        values: ["by_provinsi", "by_kabupaten", "by_kecamatan"],
-      },
-      cakupan: {
-        allowNull: false,
-        type: Sequelize.TEXT,
-      },
-      harga: {
+      wilayah_id: {
         allowNull: false,
         type: Sequelize.INTEGER,
+      },
+      blok_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+      },
+      status_kepulangan: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        values: ["tidak-pulang", "pulang-rombongan"],
+        defaultValue: "tidak-pulang",
+      },
+      raw: {
+        allowNull: false,
+        type: Sequelize.TEXT,
       },
       created_at: {
         allowNull: false,
@@ -45,6 +45,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("dropspot");
+    await queryInterface.dropTable("santri");
   },
 };

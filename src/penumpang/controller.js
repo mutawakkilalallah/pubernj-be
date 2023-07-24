@@ -14,19 +14,21 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 25;
       const offset = 0 + (page - 1) * limit;
 
-      const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: {
-            santri_nama: {
-              [Op.like]: "%" + search + "%",
-            },
-            santri_niup: {
-              [Op.like]: "%" + search + "%",
-            },
+      let whereCondition = {
+        [Op.or]: {
+          santri_nama: {
+            [Op.like]: "%" + search + "%",
           },
-          blok_id: req.role != "wilayah" ? { [Op.not]: null } : req.blok_id,
-          dropspot_id: dropspot ? dropspot : { [Op.not]: null },
+          santri_niup: {
+            [Op.like]: "%" + search + "%",
+          },
         },
+        ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
+        ...(req.role === "wilayah" && { blok_id: req.blok_id }),
+      };
+
+      const data = await Penumpang.findAndCountAll({
+        where: whereCondition,
         include: [
           {
             model: Dropspot,

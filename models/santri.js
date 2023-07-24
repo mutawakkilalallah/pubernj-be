@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Dropspot extends Model {
+  class Santri extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,38 +11,38 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Dropspot.init(
+  Santri.init(
     {
-      id: {
+      uuid: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
-      area_id: {
+      niup: {
         allowNull: false,
-        type: DataTypes.INTEGER,
-        references: {
-          model: "Area",
-          key: "id",
-        },
+        type: DataTypes.BIGINT,
       },
-      nama: {
+      nama_lengkap: {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      type: {
-        allowNull: false,
-        type: DataTypes.ENUM,
-        values: ["by_provinsi", "by_kabupaten", "by_kecamatan"],
-      },
-      cakupan: {
-        allowNull: false,
-        type: DataTypes.TEXT,
-      },
-      harga: {
+      wilayah_id: {
         allowNull: false,
         type: DataTypes.INTEGER,
+      },
+      blok_id: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+      },
+      status_kepulangan: {
+        allowNull: false,
+        type: DataTypes.ENUM,
+        values: ["tidak-pulang", "pulang-rombongan"],
+        defaultValue: "tidak-pulang",
+      },
+      raw: {
+        allowNull: false,
+        type: DataTypes.TEXT,
       },
       createdAt: {
         allowNull: false,
@@ -57,10 +57,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Dropspot",
+      modelName: "Santri",
       timestamps: true,
-      tableName: "dropspot",
+      tableName: "santri",
     }
   );
-  return Dropspot;
+  return Santri;
 };
