@@ -5,11 +5,24 @@ const responseHelper = require("../../helpers/response-helper");
 module.exports = {
   index: async (req, res) => {
     try {
-      const totalSantri = await Santri.count();
-      const totalPenumpang = await Penumpang.count();
-      const totalArea = await Dropspot.count();
-      const totalDropspot = await User.count();
-      const totalUser = await Area.count();
+      whereCondition = {};
+
+      if (req.role === "wilayah") {
+        whereCondition = {
+          blok_id: req.blok_id,
+        };
+      }
+
+      const totalSantri = await Santri.count({
+        where: whereCondition,
+      });
+      const totalPenumpang = await Penumpang.count({
+        where: whereCondition,
+      });
+      const totalTidakRombongan = totalSantri - totalPenumpang;
+      const totalArea = await Area.count();
+      const totalDropspot = await Dropspot.count();
+      const totalUser = await User.count();
 
       res.status(200).json({
         code: 200,
@@ -17,6 +30,7 @@ module.exports = {
         data: {
           totalSantri,
           totalPenumpang,
+          totalTidakRombongan,
           totalArea,
           totalDropspot,
           totalUser,

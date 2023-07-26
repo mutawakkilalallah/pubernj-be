@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       santri_niup: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.BIGINT,
       },
       santri_nama: {
@@ -32,15 +32,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       santri_wilayah: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
       },
       santri_blok: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.STRING,
       },
       blok_id: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
       },
       dropspot_id: {

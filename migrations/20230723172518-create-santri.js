@@ -9,19 +9,35 @@ module.exports = {
         type: Sequelize.STRING,
       },
       niup: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.BIGINT,
       },
       nama_lengkap: {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      negara: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      provinsi: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      kabupaten: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      kecamatan: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
       wilayah_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
       },
       blok_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
       },
       status_kepulangan: {

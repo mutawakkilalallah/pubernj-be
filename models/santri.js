@@ -19,19 +19,35 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       niup: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.BIGINT,
       },
       nama_lengkap: {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      negara: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      provinsi: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      kabupaten: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      kecamatan: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
       wilayah_id: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
       },
       blok_id: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
       },
       status_kepulangan: {

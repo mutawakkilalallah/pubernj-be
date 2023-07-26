@@ -14,7 +14,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       santri_niup: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.BIGINT,
       },
       santri_nama: {
@@ -22,15 +22,15 @@ module.exports = {
         type: Sequelize.STRING,
       },
       santri_wilayah: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING,
       },
       santri_blok: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING,
       },
       blok_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
       },
       dropspot_id: {
