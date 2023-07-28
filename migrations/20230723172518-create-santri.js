@@ -16,6 +16,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      jenis_kelamin: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        values: ["L", "P"],
+      },
       negara: {
         allowNull: true,
         type: Sequelize.STRING,
@@ -32,23 +37,27 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING,
       },
-      wilayah_id: {
+      alias_wilayah: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      wilayah: {
+        allowNull: true,
+        type: Sequelize.STRING,
+      },
+      id_blok: {
         allowNull: true,
         type: Sequelize.INTEGER,
       },
-      blok_id: {
+      blok: {
         allowNull: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
       },
       status_kepulangan: {
         allowNull: false,
         type: Sequelize.ENUM,
-        values: ["tidak-pulang", "pulang-rombongan"],
-        defaultValue: "tidak-pulang",
-      },
-      raw: {
-        allowNull: false,
-        type: Sequelize.TEXT,
+        values: ["rombongan", "non-rombongan"],
+        defaultValue: "non-rombongan",
       },
       created_at: {
         allowNull: false,
@@ -57,6 +66,10 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
+      },
+      raw: {
+        allowNull: false,
+        type: Sequelize.TEXT,
       },
     });
   },

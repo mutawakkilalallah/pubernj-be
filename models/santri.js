@@ -26,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      jenis_kelamin: {
+        allowNull: false,
+        type: DataTypes.ENUM,
+        values: ["L", "P"],
+      },
       negara: {
         allowNull: true,
         type: DataTypes.STRING,
@@ -42,23 +47,27 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      wilayah_id: {
+      alias_wilayah: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      wilayah: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      id_blok: {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
-      blok_id: {
+      blok: {
         allowNull: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
       status_kepulangan: {
         allowNull: false,
         type: DataTypes.ENUM,
-        values: ["tidak-pulang", "pulang-rombongan"],
-        defaultValue: "tidak-pulang",
-      },
-      raw: {
-        allowNull: false,
-        type: DataTypes.TEXT,
+        values: ["rombongan", "non-rombongan"],
+        defaultValue: "non-rombongan",
       },
       createdAt: {
         allowNull: false,
@@ -69,6 +78,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         field: "updated_at",
         type: DataTypes.DATE,
+      },
+      raw: {
+        allowNull: false,
+        type: DataTypes.TEXT,
       },
     },
     {

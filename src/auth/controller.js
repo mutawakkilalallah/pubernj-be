@@ -1,10 +1,9 @@
 require("dotenv").config();
-const { User } = require("../../models");
+const { User, Santri } = require("../../models");
 const authValidation = require("../../validations/auth-validation");
 const jwt = require("jsonwebtoken");
+const { JWT_SECRET_KEY } = process.env;
 const bcrypt = require("bcrypt");
-const axios = require("axios");
-const { JWT_SECRET_KEY, API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const responseHelper = require("../../helpers/response-helper");
 
 module.exports = {
@@ -18,8 +17,20 @@ module.exports = {
         password = value.password;
 
         const data = await User.findOne({
+          attributes: ["santri_uuid", "username", "password", "role"],
           where: {
             username: username,
+          },
+          include: {
+            model: Santri,
+            as: "santri",
+            attributes: [
+              "nama_lengkap",
+              "alias_wilayah",
+              "id_blok",
+              "wilayah",
+              "blok",
+            ],
           },
         });
         if (!data) {
@@ -31,30 +42,24 @@ module.exports = {
           } else {
             const token = await jwt.sign(
               {
-                id: data.id,
+                uuid: data.uuid,
                 username: data.username,
-                // active: data.active,
                 role: data.role,
-                blok_id: data.blok_id,
+                wilayah: data.santri.alias_wilayah,
+                id_blok: data.santri.id_blok,
               },
               JWT_SECRET_KEY,
               {
-                expiresIn: "12h",
+                expiresIn: "1h",
               }
             );
-            data.raw = JSON.parse(data.raw);
-
+            data.password = null;
             responseHelper.auth(res, token, data);
-            // responseHelper.auth(res, token, data);
           }
         }
       }
     } catch (err) {
-      responseHelper.serverError(
-        res,
-        err.message
-        // "Terjadi kesalahan saat koneksi ke PEDATREN"
-      );
+      responseHelper.serverError(res, err.message);
     }
   },
 };

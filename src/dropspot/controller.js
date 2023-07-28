@@ -1,9 +1,10 @@
 const { Op } = require("sequelize");
-const { Dropspot, Area } = require("../../models");
+const { Dropspot, Area, Penumpang } = require("../../models");
 const dropspotValidation = require("../../validations/dropspot-validation");
 const responseHelper = require("../../helpers/response-helper");
 
 Dropspot.belongsTo(Area, { as: "area", foreignKey: "area_id" });
+Dropspot.belongsTo(Penumpang, { as: "penumpang", foreignKey: "id" });
 
 module.exports = {
   getAll: async (req, res) => {

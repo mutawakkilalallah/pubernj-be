@@ -3,11 +3,11 @@ const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const { User } = require("../../models");
+const { User, Santri, sequelize } = require("../../models");
 const userValidation = require("../../validations/user-validation");
 const responseHelper = require("../../helpers/response-helper");
 
-// Dropspot.belongsTo(Area, { as: "area", foreignKey: "area_id" });
+User.belongsTo(Santri, { as: "santri", foreignKey: "santri_uuid" });
 
 module.exports = {
   getAll: async (req, res) => {
@@ -19,25 +19,39 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await User.findAndCountAll({
+        attributes: { exclude: ["password"] },
         where: {
-          [Op.or]: {
-            username: {
-              [Op.like]: "%" + search + "%",
+          [Op.or]: [
+            {
+              username: {
+                [Op.like]: `%${search}%`,
+              },
             },
-          },
+            {
+              "$santri.nama_lengkap$": {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
           role: role ? role : { [Op.not]: null },
+        },
+        include: {
+          model: Santri,
+          as: "santri",
+          attributes: {
+            exclude: ["alias_wilayah", "id_blok", "status_kepulangan", "raw"],
+          },
         },
         limit: limit,
         offset: offset,
       });
 
-      data.rows.map((d) => {
-        d.raw = JSON.parse(d.raw);
-      });
-
       const filterRole = [
         { key: "sysadmin", value: "Sysadmin" },
+        { key: "admin", value: "Admin" },
+        { key: "supervisor", value: "Supervisor" },
         { key: "wilayah", value: "Wilayah" },
+        { key: "daerah", value: "Daerah" },
       ];
 
       responseHelper.allData(res, page, limit, data, { role: filterRole });
@@ -52,12 +66,12 @@ module.exports = {
         where: {
           id: req.params.id,
         },
+        include: "santri",
       });
 
       if (!data) {
         responseHelper.notFound(res);
       } else {
-        data.raw = JSON.parse(data.raw);
         responseHelper.oneData(res, data);
       }
     } catch (err) {
@@ -80,27 +94,27 @@ module.exports = {
         if (data) {
           responseHelper.badRequest(res, "santri sudah terdaftar");
         } else {
-          const response = await axios.get(
-            API_PEDATREN_URL + "/person/" + value.santri_uuid,
-            {
-              headers: {
-                "x-api-key": API_PEDATREN_TOKEN,
-              },
-            }
-          );
+          // const response = await axios.get(
+          //   API_PEDATREN_URL + "/person/" + value.santri_uuid,
+          //   {
+          //     headers: {
+          //       "x-api-key": API_PEDATREN_TOKEN,
+          //     },
+          //   }
+          // );
 
           value.password = await bcrypt.hash(value.password, 10);
-          if (value.role != "wilayah") {
-            value.blok_id = null;
-          } else {
-            value.blok_id =
-              response.data.domisili_santri[
-                response.data.domisili_santri.length - 1
-              ].id_blok;
-          }
+          // if (value.role != "wilayah") {
+          //   value.blok_id = null;
+          // } else {
+          //   value.blok_id =
+          //     response.data.domisili_santri[
+          //       response.data.domisili_santri.length - 1
+          //     ].id_blok;
+          // }
 
-          value.santri_nama = response.data.nama_lengkap;
-          value.raw = JSON.stringify(response.data);
+          // value.santri_nama = response.data.nama_lengkap;
+          // value.raw = JSON.stringify(response.data);
 
           await User.create(value);
 
@@ -128,22 +142,22 @@ module.exports = {
         if (error) {
           responseHelper.badRequest(res, error.message);
         } else {
-          const response = await axios.get(
-            API_PEDATREN_URL + "/person/" + value.santri_uuid,
-            {
-              headers: {
-                "x-api-key": API_PEDATREN_TOKEN,
-              },
-            }
-          );
-          if (value.role != "wilayah") {
-            value.blok_id = null;
-          } else {
-            value.blok_id =
-              response.data.domisili_santri[
-                response.data.domisili_santri.length - 1
-              ].id_blok;
-          }
+          // const response = await axios.get(
+          //   API_PEDATREN_URL + "/person/" + value.santri_uuid,
+          //   {
+          //     headers: {
+          //       "x-api-key": API_PEDATREN_TOKEN,
+          //     },
+          //   }
+          // );
+          // if (value.role != "wilayah") {
+          //   value.blok_id = null;
+          // } else {
+          //   value.blok_id =
+          //     response.data.domisili_santri[
+          //       response.data.domisili_santri.length - 1
+          //     ].id_blok;
+          // }
 
           await user.update(value);
 
@@ -180,6 +194,32 @@ module.exports = {
           responseHelper.createdOrUpdated(res);
         }
       }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  updateRole: async (req, res) => {
+    try {
+      const user = await User.findAll();
+
+      // if (!user) {
+      //   responseHelper.notFound(res);
+      // } else {
+      const { error, value } = userValidation.updateRole.validate(req.body);
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        await User.update(value, {
+          where: {
+            id: value.id_user,
+          },
+        });
+
+        responseHelper.createdOrUpdated(res);
+      }
+      // }
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }

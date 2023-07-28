@@ -10,7 +10,8 @@ module.exports = async (req, res, next) => {
       responseHelper.unauthorized(res);
     } else {
       req.role = decoded.role;
-      req.blok_id = decoded.blok_id;
+      req.wilayah = decoded.wilayah;
+      req.id_blok = decoded.id_blok;
       next();
     }
   });

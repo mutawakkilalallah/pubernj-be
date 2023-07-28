@@ -23,26 +23,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      santri_niup: {
-        allowNull: true,
-        type: DataTypes.BIGINT,
-      },
-      santri_nama: {
-        allowNull: false,
-        type: DataTypes.STRING,
-      },
-      santri_wilayah: {
-        allowNull: true,
-        type: DataTypes.STRING,
-      },
-      santri_blok: {
-        allowNull: true,
-        type: DataTypes.STRING,
-      },
-      blok_id: {
-        allowNull: true,
-        type: DataTypes.INTEGER,
-      },
       dropspot_id: {
         allowNull: true,
         type: DataTypes.INTEGER,
@@ -61,10 +41,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM,
         values: ["belum-lunas", "kurang", "lebih", "lunas"],
         defaultValue: "belum-lunas",
-      },
-      raw: {
-        allowNull: false,
-        type: DataTypes.TEXT,
       },
       createdAt: {
         allowNull: false,

@@ -6,6 +6,7 @@ const {
   update,
   destroy,
   updatePassword,
+  updateRole,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -17,6 +18,7 @@ router.get("/:id", access.admin, getById);
 router.post("/", access.admin, create);
 
 router.put("/password/:id", updatePassword);
+router.put("/roles", updateRole);
 
 router.put("/:id", update);
 

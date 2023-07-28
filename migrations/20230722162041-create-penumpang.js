@@ -13,26 +13,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      santri_niup: {
-        allowNull: true,
-        type: Sequelize.BIGINT,
-      },
-      santri_nama: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      santri_wilayah: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      santri_blok: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      blok_id: {
-        allowNull: true,
-        type: Sequelize.INTEGER,
-      },
       dropspot_id: {
         allowNull: true,
         type: Sequelize.INTEGER,
@@ -51,10 +31,6 @@ module.exports = {
         type: Sequelize.ENUM,
         values: ["belum-lunas", "kurang", "lebih", "lunas"],
         defaultValue: "belum-lunas",
-      },
-      raw: {
-        allowNull: false,
-        type: Sequelize.TEXT,
       },
       created_at: {
         allowNull: false,

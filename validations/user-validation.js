@@ -39,4 +39,14 @@ module.exports = {
       "any.required": "password harus harus diisi",
     }),
   }),
+  updateRole: Joi.object({
+    id_user: Joi.required().messages({
+      "any.required": "role harus harus diisi",
+    }),
+    role: Joi.string().required().messages({
+      "string.base": "role harus berisi huruf",
+      "string.empty": "role harus tidak boleh kosong",
+      "any.required": "role harus harus diisi",
+    }),
+  }),
 };

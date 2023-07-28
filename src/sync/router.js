@@ -16,6 +16,7 @@ const {
   generatePenumpangv10,
   generatePenumpangv11,
   generatePenumpangv12,
+  excludePenumpang,
 } = require("./controller");
 const router = express.Router();
 
@@ -31,6 +32,7 @@ router.post("/generate/penumpang/v9", generatePenumpangv9);
 router.post("/generate/penumpang/v10", generatePenumpangv10);
 router.post("/generate/penumpang/v11", generatePenumpangv11);
 router.post("/generate/penumpang/v12", generatePenumpangv12);
+router.delete("/exclude/penumpang", excludePenumpang);
 router.put("/update/penumpang", updatePenumpang);
 
 router.put("/update/user", updateUser);

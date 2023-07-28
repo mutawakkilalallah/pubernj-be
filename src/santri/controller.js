@@ -1,40 +1,12 @@
 require("dotenv").config();
 const { Op } = require("sequelize");
+const { sequelize } = require("../../models");
 const { Santri } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
 
 module.exports = {
-  // getAll: async (req, res) => {
-  //   try {
-  //     const search = req.query.cari || "";
-  //     const page = parseInt(req.query.page) || 1;
-  //     const limit = parseInt(req.query.limit) || 25;
-
-  //     const data = await axios.get(API_PEDATREN_URL + "/santri", {
-  //       headers: {
-  //         "x-api-key": API_PEDATREN_TOKEN,
-  //       },
-  //       params: {
-  //         page: page,
-  //         limit: limit,
-  //         cari: search,
-  //         blok:
-  //           req.role === "wilayah" || req.role === "daerah"
-  //             ? req.blok_id
-  //             : null,
-  //       },
-  //     });
-  //     responseHelper.allDataWithPedatren(res, page, limit, data);
-  //   } catch (err) {
-  //     responseHelper.serverError(
-  //       res,
-  //       "Terjadi kesalahan saat koneksi ke PEDATREN"
-  //     );
-  //   }
-  // },
-
   getAll: async (req, res) => {
     try {
       const search = req.query.cari || "";
@@ -43,53 +15,34 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       let whereCondition = {
-        [Op.or]: {
-          nama_lengkap: {
-            [Op.like]: "%" + search + "%",
+        [Op.or]: [
+          {
+            nama_lengkap: {
+              [Op.like]: `%${search}%`,
+            },
           },
-          niup: {
-            [Op.like]: "%" + search + "%",
+          {
+            niup: {
+              [Op.like]: `%${search}%`,
+            },
           },
-        },
-        ...(req.role === "wilayah" && { blok_id: req.blok_id }),
+        ],
+        ...(req.role === "daerah" && { id_blok: req.id_blok }),
+        ...(req.role === "wilayah" && { alias_wilayah: req.wilayah }),
       };
 
       const data = await Santri.findAndCountAll({
         where: whereCondition,
         limit: limit,
         offset: offset,
+        order: [["updated_at", "DESC"]],
       });
-
-      data.rows.map((d) => {
-        d.raw = JSON.parse(d.raw);
-      });
-      // const filterArea = await Area.findAll();
 
       responseHelper.allData(res, page, limit, data);
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }
   },
-
-  // getByUuid: async (req, res) => {
-  //   try {
-  //     const response = await axios.get(
-  //       API_PEDATREN_URL + "/person/" + req.params.uuid,
-  //       {
-  //         headers: {
-  //           "x-api-key": API_PEDATREN_TOKEN,
-  //         },
-  //       }
-  //     );
-
-  //     responseHelper.oneData(res, response.data);
-  //   } catch (err) {
-  //     responseHelper.serverError(
-  //       res,
-  //       "Terjadi kesalahan saat koneksi ke PEDATREN"
-  //     );
-  //   }
-  // },
 
   getByUuid: async (req, res) => {
     try {
@@ -99,9 +52,12 @@ module.exports = {
         },
       });
 
-      data.raw = JSON.parse(data.raw);
-
-      data ? responseHelper.oneData(res, data) : responseHelper.notFound(res);
+      if (!data) {
+        responseHelper.notFound(res);
+      } else {
+        data.raw = JSON.parse(data.raw);
+        responseHelper.oneData(res, data);
+      }
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }

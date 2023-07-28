@@ -5,9 +5,60 @@ const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
 
+async function processDataSantri(uuid) {
+  try {
+    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
+      headers: {
+        "x-api-key": API_PEDATREN_TOKEN,
+      },
+    });
+
+    await Santri.create({
+      uuid: response.data.uuid,
+      niup: response.data.warga_pesantren.niup
+        ? response.data.warga_pesantren.niup
+        : null,
+      nama_lengkap: response.data.nama_lengkap,
+      jenis_kelamin: response.data.jenis_kelamin,
+      negara: response.data.negara ? response.data.negara : null,
+      provinsi: response.data.provinsi ? response.data.provinsi : null,
+      kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
+      kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
+      wilayah: response.data.domisili_santri
+        ? response.data.domisili_santri[
+            response.data.domisili_santri.length - 1
+          ].wilayah
+        : null,
+      alias_wilayah: response.data.domisili_santri
+        ? response.data.domisili_santri[
+            response.data.domisili_santri.length - 1
+          ].wilayah
+            .toLowerCase()
+            .replace(/ /g, "-")
+        : null,
+      blok: response.data.domisili_santri
+        ? response.data.domisili_santri[
+            response.data.domisili_santri.length - 1
+          ].blok
+        : null,
+      id_blok: response.data.domisili_santri
+        ? response.data.domisili_santri[
+            response.data.domisili_santri.length - 1
+          ].id_blok
+        : null,
+      raw: JSON.stringify(response.data),
+    });
+    return true;
+  } catch (err) {
+    console.log(uuid + " : " + err.message);
+    return false;
+  }
+}
+
 async function processDataPenumpangKec(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
+      attributes: ["uuid"],
       where: {
         santri_uuid: uuid,
       },
@@ -17,43 +68,28 @@ async function processDataPenumpangKec(uuid) {
       //
     } else {
       const data = await Santri.findOne({
+        attributes: ["uuid"],
         where: {
           uuid: uuid,
         },
       });
 
-      data.raw = JSON.parse(data.raw);
-
       const dropspot = await Dropspot.findAll({
         where: {
           cakupan: {
-            [Op.like]: "%" + data.raw.kecamatan + "%",
+            [Op.like]: "%" + data.kecamatan + "%",
           },
         },
       });
 
       await Penumpang.create({
         santri_uuid: data.uuid,
-        santri_nama: data.nama_lengkap,
-        santri_niup: data.niup,
         dropspot_id: dropspot.length < 1 ? null : dropspot[0].id,
-        santri_wilayah: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .wilayah
-          : null,
-        santri_blok: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1].blok
-          : null,
-        blok_id: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .id_blok
-          : null,
-        raw: JSON.stringify(data.raw),
       });
 
       await Santri.update(
         {
-          status_kepulangan: "pulang-rombongan",
+          status_kepulangan: "rombongan",
         },
         {
           where: {
@@ -62,14 +98,17 @@ async function processDataPenumpangKec(uuid) {
         }
       );
     }
+    return true;
   } catch (err) {
-    console.log(err.message);
+    console.log(uuid + " : " + err.message);
+    return false;
   }
 }
 
 async function processDataPenumpangKab(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
+      attributes: ["uuid"],
       where: {
         santri_uuid: uuid,
       },
@@ -79,43 +118,28 @@ async function processDataPenumpangKab(uuid) {
       //
     } else {
       const data = await Santri.findOne({
+        attributes: ["uuid"],
         where: {
           uuid: uuid,
         },
       });
 
-      data.raw = JSON.parse(data.raw);
-
       const dropspot = await Dropspot.findAll({
         where: {
           cakupan: {
-            [Op.like]: "%" + data.raw.kabupaten + "%",
+            [Op.like]: "%" + data.kabupaten + "%",
           },
         },
       });
 
       await Penumpang.create({
         santri_uuid: data.uuid,
-        santri_nama: data.nama_lengkap,
-        santri_niup: data.niup,
         dropspot_id: dropspot.length < 1 ? null : dropspot[0].id,
-        santri_wilayah: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .wilayah
-          : null,
-        santri_blok: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1].blok
-          : null,
-        blok_id: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .id_blok
-          : null,
-        raw: JSON.stringify(data.raw),
       });
 
       await Santri.update(
         {
-          status_kepulangan: "pulang-rombongan",
+          status_kepulangan: "rombongan",
         },
         {
           where: {
@@ -124,15 +148,17 @@ async function processDataPenumpangKab(uuid) {
         }
       );
     }
+    return true;
   } catch (err) {
-    console.log(uuid);
-    console.log(err.message);
+    console.log(uuid + " : " + err.message);
+    return false;
   }
 }
 
 async function processDataPenumpangProv(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
+      attributes: ["uuid"],
       where: {
         santri_uuid: uuid,
       },
@@ -142,12 +168,11 @@ async function processDataPenumpangProv(uuid) {
       //
     } else {
       const data = await Santri.findOne({
+        attributes: ["uuid"],
         where: {
           uuid: uuid,
         },
       });
-
-      data.raw = JSON.parse(data.raw);
 
       let whereCondition = {};
 
@@ -162,7 +187,7 @@ async function processDataPenumpangProv(uuid) {
       } else {
         whereCondition = {
           cakupan: {
-            [Op.like]: "%" + data.raw.provinsi + "%",
+            [Op.like]: "%" + data.provinsi + "%",
           },
         };
       }
@@ -173,26 +198,12 @@ async function processDataPenumpangProv(uuid) {
 
       await Penumpang.create({
         santri_uuid: data.uuid,
-        santri_nama: data.nama_lengkap,
-        santri_niup: data.niup,
         dropspot_id: dropspot.length < 1 ? null : dropspot[0].id,
-        santri_wilayah: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .wilayah
-          : null,
-        santri_blok: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1].blok
-          : null,
-        blok_id: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .id_blok
-          : null,
-        raw: JSON.stringify(data.raw),
       });
 
       await Santri.update(
         {
-          status_kepulangan: "pulang-rombongan",
+          status_kepulangan: "rombongan",
         },
         {
           where: {
@@ -201,14 +212,17 @@ async function processDataPenumpangProv(uuid) {
         }
       );
     }
+    return true;
   } catch (err) {
-    console.log(err.message);
+    console.log(uuid + " : " + err.message);
+    return false;
   }
 }
 
 async function processDataPenumpangNeg(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
+      attributes: ["uuid"],
       where: {
         santri_uuid: uuid,
       },
@@ -218,43 +232,28 @@ async function processDataPenumpangNeg(uuid) {
       //
     } else {
       const data = await Santri.findOne({
+        attributes: ["uuid"],
         where: {
           uuid: uuid,
         },
       });
 
-      data.raw = JSON.parse(data.raw);
-
       const dropspot = await Dropspot.findAll({
         where: {
           cakupan: {
-            [Op.like]: "%" + data.raw.negara + "%",
+            [Op.like]: "%" + data.negara + "%",
           },
         },
       });
 
       await Penumpang.create({
         santri_uuid: data.uuid,
-        santri_nama: data.nama_lengkap,
-        santri_niup: data.niup,
         dropspot_id: dropspot.length < 1 ? null : dropspot[0].id,
-        santri_wilayah: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .wilayah
-          : null,
-        santri_blok: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1].blok
-          : null,
-        blok_id: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .id_blok
-          : null,
-        raw: JSON.stringify(data.raw),
       });
 
       await Santri.update(
         {
-          status_kepulangan: "pulang-rombongan",
+          status_kepulangan: "rombongan",
         },
         {
           where: {
@@ -263,14 +262,17 @@ async function processDataPenumpangNeg(uuid) {
         }
       );
     }
+    return true;
   } catch (err) {
-    console.log(err.message);
+    console.log(uuid + " : " + err.message);
+    return false;
   }
 }
 
 async function processDataPenumpangPaiton(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
+      attributes: ["uuid"],
       where: {
         santri_uuid: uuid,
       },
@@ -280,12 +282,11 @@ async function processDataPenumpangPaiton(uuid) {
       //
     } else {
       const data = await Santri.findOne({
+        attributes: ["uuid"],
         where: {
           uuid: uuid,
         },
       });
-
-      data.raw = JSON.parse(data.raw);
 
       const dropspot = await Dropspot.findAll({
         where: {
@@ -297,26 +298,12 @@ async function processDataPenumpangPaiton(uuid) {
 
       await Penumpang.create({
         santri_uuid: data.uuid,
-        santri_nama: data.nama_lengkap,
-        santri_niup: data.niup,
         dropspot_id: dropspot.length < 1 ? null : dropspot[0].id,
-        santri_wilayah: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .wilayah
-          : null,
-        santri_blok: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1].blok
-          : null,
-        blok_id: data.raw.domisili_santri
-          ? data.raw.domisili_santri[data.raw.domisili_santri.length - 1]
-              .id_blok
-          : null,
-        raw: JSON.stringify(data.raw),
       });
 
       await Santri.update(
         {
-          status_kepulangan: "pulang-rombongan",
+          status_kepulangan: "rombongan",
         },
         {
           where: {
@@ -325,6 +312,74 @@ async function processDataPenumpangPaiton(uuid) {
         }
       );
     }
+    return true;
+  } catch (err) {
+    console.log(uuid + " : " + err.message);
+    return false;
+  }
+}
+
+async function processExclude(uuid) {
+  try {
+    await Penumpang.destroy({
+      where: {
+        santri_uuid: uuid,
+      },
+    });
+    await Santri.update(
+      {
+        status_kepulangan: "non-rombongan",
+      },
+      {
+        where: {
+          uuid: uuid,
+        },
+      }
+    );
+    return true;
+  } catch (err) {
+    console.log(uuid + " : " + err.message);
+    return false;
+  }
+}
+
+async function processUpdateDataSantri(uuid) {
+  try {
+    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
+      headers: {
+        "x-api-key": API_PEDATREN_TOKEN,
+      },
+    });
+
+    await Santri.update(
+      {
+        nama_lengkap: response.data.nama_lengkap,
+        niup:
+          response.data.warga_pesantren.niup != null
+            ? response.data.warga_pesantren.niup
+            : null,
+        negara: response.data.negara ? response.data.negara : null,
+        provinsi: response.data.provinsi ? response.data.provinsi : null,
+        kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
+        kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
+        wilayah_id: response.data.domisili_santri
+          ? response.data.domisili_santri[
+              response.data.domisili_santri.length - 1
+            ].id_wilayah
+          : null,
+        blok_id: response.data.domisili_santri
+          ? response.data.domisili_santri[
+              response.data.domisili_santri.length - 1
+            ].id_blok
+          : null,
+        raw: JSON.stringify(response.data),
+      },
+      {
+        where: {
+          uuid: uuid,
+        },
+      }
+    );
   } catch (err) {
     console.log(err.message);
   }
@@ -397,87 +452,72 @@ async function processUpdateDataUser(id, role, uuid) {
   }
 }
 
-async function processDataSantri(uuid) {
-  try {
-    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
-      headers: {
-        "x-api-key": API_PEDATREN_TOKEN,
-      },
-    });
-
-    await Santri.create({
-      uuid: response.data.uuid,
-      nama_lengkap: response.data.nama_lengkap,
-      niup:
-        response.data.warga_pesantren.niup != null
-          ? response.data.warga_pesantren.niup
-          : null,
-      negara: response.data.negara ? response.data.negara : null,
-      provinsi: response.data.provinsi ? response.data.provinsi : null,
-      kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
-      kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
-      wilayah_id: response.data.domisili_santri
-        ? response.data.domisili_santri[
-            response.data.domisili_santri.length - 1
-          ].id_wilayah
-        : null,
-      blok_id: response.data.domisili_santri
-        ? response.data.domisili_santri[
-            response.data.domisili_santri.length - 1
-          ].id_blok
-        : null,
-      raw: JSON.stringify(response.data),
-    });
-  } catch (err) {
-    console.log(uuid + " : " + err.message);
-  }
-}
-
-async function processUpdateDataSantri(uuid) {
-  try {
-    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
-      headers: {
-        "x-api-key": API_PEDATREN_TOKEN,
-      },
-    });
-
-    await Santri.update(
-      {
-        nama_lengkap: response.data.nama_lengkap,
-        niup:
-          response.data.warga_pesantren.niup != null
-            ? response.data.warga_pesantren.niup
-            : null,
-        negara: response.data.negara ? response.data.negara : null,
-        provinsi: response.data.provinsi ? response.data.provinsi : null,
-        kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
-        kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
-        wilayah_id: response.data.domisili_santri
-          ? response.data.domisili_santri[
-              response.data.domisili_santri.length - 1
-            ].id_wilayah
-          : null,
-        blok_id: response.data.domisili_santri
-          ? response.data.domisili_santri[
-              response.data.domisili_santri.length - 1
-            ].id_blok
-          : null,
-        raw: JSON.stringify(response.data),
-      },
-      {
-        where: {
-          uuid: uuid,
-        },
-      }
-    );
-  } catch (err) {
-    console.log(err.message);
-  }
-}
-
 module.exports = {
+  generateSantri: async (req, res) => {
+    try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
+
+      for (let index = 1; index < 9; index++) {
+        const data = await axios.get(API_PEDATREN_URL + "/santri", {
+          headers: {
+            "x-api-key": API_PEDATREN_TOKEN,
+          },
+          params: {
+            limit: 1000,
+            page: index,
+          },
+        });
+
+        const results = await Promise.all(
+          data.data.map((d) => processDataSantri(d.uuid))
+        );
+
+        const berhasil = results.filter((result) => result).length;
+        const gagal = results.filter((result) => !result).length;
+
+        totalBerhasil += berhasil;
+        totalGagal += gagal;
+
+        console.log(
+          `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+        );
+      }
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
+
+      responseHelper.syncSuccess(res);
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  updateSantri: async (req, res) => {
+    try {
+      const data = await Santri.findAll({
+        where: {
+          kecamatan: null,
+        },
+      });
+      console.log(data.length);
+      // await Promise.all(data.map((d) => processUpdateDataSantri(d.uuid)));
+
+      responseHelper.syncSuccess(res);
+    } catch (err) {
+      responseHelper.serverError(
+        res,
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
+      );
+    }
+  },
+
   generatePenumpangv1: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listKabupaten = [
         "Kab. Pasuruan",
         "Kota Pasuruan",
@@ -487,6 +527,7 @@ module.exports = {
         "Kab. Bondowoso",
       ];
       const data = await Santri.findAll({
+        attributess: ["uuid", "kabupaten"],
         limit: 10000,
         where: {
           kabupaten: {
@@ -495,7 +536,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangKec(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKec(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -509,6 +566,8 @@ module.exports = {
 
   generatePenumpangv2: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listKabupaten = [
         "Kab. Bangkalan",
         "Kab. Pamekasan",
@@ -543,8 +602,23 @@ module.exports = {
         },
       });
 
-      // console.log(data.length);
-      await Promise.all(data.map((d) => processDataPenumpangKab(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKab(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -558,6 +632,8 @@ module.exports = {
 
   generatePenumpangv3: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listKabupaten = [
         "Kab. Probolinggo",
         "Kab. Situbondo",
@@ -593,7 +669,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangKec(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKec(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -607,6 +699,8 @@ module.exports = {
 
   generatePenumpangv4: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listKabupaten = [
         "Kota Probolinggo",
         "Kab. Probolinggo",
@@ -632,8 +726,23 @@ module.exports = {
           },
         },
       });
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKec(d.uuid))
+      );
 
-      await Promise.all(data.map((d) => processDataPenumpangKec(d.uuid)));
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -647,6 +756,8 @@ module.exports = {
 
   generatePenumpangv5: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listProvinsi = ["Bali"];
       const listKabupaten = [
         "Kab. Buleleng",
@@ -672,7 +783,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangKab(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKab(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -686,6 +813,8 @@ module.exports = {
 
   generatePenumpangv6: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listProvinsi = ["Jawa Tengah", "Daerah Istimewa Yogyakarta"];
       const listKabupaten = [
         "Kab. Bantul",
@@ -721,7 +850,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangKab(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKab(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -735,6 +880,8 @@ module.exports = {
 
   generatePenumpangv7: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listProvinsi = ["Banten"];
       const data = await Santri.findAll({
         limit: 10000,
@@ -745,7 +892,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangProv(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangProv(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -759,6 +922,8 @@ module.exports = {
 
   generatePenumpangv8: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listProvinsi = ["Jawa Barat", "DKI Jakarta"];
       const listKabupaten = [
         "Kota Adm. Jakarta Pusat",
@@ -790,8 +955,23 @@ module.exports = {
         },
       });
 
-      console.log(data.length);
-      await Promise.all(data.map((d) => processDataPenumpangKab(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKec(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -805,6 +985,8 @@ module.exports = {
 
   generatePenumpangv9: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listProvinsi = [
         "Nusa Tenggara Barat",
         "Nusa Tenggara Timur",
@@ -843,7 +1025,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangProv(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangProv(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -857,6 +1055,8 @@ module.exports = {
 
   generatePenumpangv10: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listNegara = ["Malaysia", "Thailand"];
       const data = await Santri.findAll({
         limit: 10000,
@@ -866,8 +1066,23 @@ module.exports = {
           },
         },
       });
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangNeg(d.uuid))
+      );
 
-      await Promise.all(data.map((d) => processDataPenumpangNeg(d.uuid)));
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -881,6 +1096,8 @@ module.exports = {
 
   generatePenumpangv11: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const data = await Santri.findAll({
         limit: 10000,
         where: {
@@ -890,7 +1107,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangPaiton(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangPaiton(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -904,6 +1137,8 @@ module.exports = {
 
   generatePenumpangv12: async (req, res) => {
     try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
       const listKabupaten = ["Kab. Sumenep", "Kab. Gresik"];
       const listKecamatan = [
         "Arjasa",
@@ -927,7 +1162,23 @@ module.exports = {
         },
       });
 
-      await Promise.all(data.map((d) => processDataPenumpangKab(d.uuid)));
+      const results = await Promise.all(
+        data.map((d) => processDataPenumpangKab(d.uuid))
+      );
+
+      const berhasil = results.filter((result) => result).length;
+      const gagal = results.filter((result) => !result).length;
+
+      totalBerhasil += berhasil;
+      totalGagal += gagal;
+
+      console.log(
+        `didapat : ${data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+      );
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
 
       responseHelper.syncSuccess(res);
     } catch (err) {
@@ -936,6 +1187,49 @@ module.exports = {
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
       );
+    }
+  },
+
+  excludePenumpang: async (req, res) => {
+    try {
+      let totalBerhasil = 0;
+      let totalGagal = 0;
+
+      for (let index = 1; index < 3; index++) {
+        const data = await axios.get(API_PEDATREN_URL + "/santri", {
+          headers: {
+            "x-api-key": API_PEDATREN_TOKEN,
+          },
+          params: {
+            limit: 1000,
+            status: "santri-non-siswa",
+            jenis_kelamin: "L",
+            page: index,
+          },
+        });
+        console.log(data.data.length);
+        const results = await Promise.all(
+          data.data.map((d) => processExclude(d.uuid))
+        );
+
+        const berhasil = results.filter((result) => result).length;
+        const gagal = results.filter((result) => !result).length;
+
+        totalBerhasil += berhasil;
+        totalGagal += gagal;
+
+        console.log(
+          `didapat : ${data.data.length} - diproses : ${results.length} | berhasil(${berhasil})/gagal(${gagal})`
+        );
+      }
+
+      console.log(
+        `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
+      );
+
+      responseHelper.syncSuccess(res);
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
     }
   },
 
@@ -964,50 +1258,6 @@ module.exports = {
       await Promise.all(
         data.map((d) => processUpdateDataUser(d.id, d.role, d.santri_uuid))
       );
-
-      responseHelper.syncSuccess(res);
-    } catch (err) {
-      responseHelper.serverError(
-        res,
-        err.message
-        // "Terjadi kesalahan saat koneksi ke PEDATREN"
-      );
-    }
-  },
-
-  generateSantri: async (req, res) => {
-    try {
-      for (let index = 1; index < 9; index++) {
-        const data = await axios.get(API_PEDATREN_URL + "/santri", {
-          headers: {
-            "x-api-key": API_PEDATREN_TOKEN,
-          },
-          params: {
-            limit: 1000,
-            page: index,
-          },
-        });
-        await Promise.all(data.data.map((d) => processDataSantri(d.uuid)));
-      }
-      responseHelper.syncSuccess(res);
-    } catch (err) {
-      responseHelper.serverError(
-        res,
-        err.message
-        // "Terjadi kesalahan saat koneksi ke PEDATREN"
-      );
-    }
-  },
-
-  updateSantri: async (req, res) => {
-    try {
-      const data = await Santri.findAll({
-        where: {
-          kecamatan: null,
-        },
-      });
-      console.log(data.length);
-      // await Promise.all(data.map((d) => processUpdateDataSantri(d.uuid)));
 
       responseHelper.syncSuccess(res);
     } catch (err) {

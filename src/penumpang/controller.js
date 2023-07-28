@@ -1,39 +1,62 @@
 const { Op } = require("sequelize");
-const { Penumpang, Area, Dropspot } = require("../../models");
+const {
+  Penumpang,
+  Area,
+  Dropspot,
+  Santri,
+  sequelize,
+} = require("../../models");
 // const dropspotValidation = require("../../validations/dropspot-validation");
 const responseHelper = require("../../helpers/response-helper");
 
 Penumpang.belongsTo(Dropspot, { as: "dropspot", foreignKey: "dropspot_id" });
+Penumpang.belongsTo(Santri, { as: "santri", foreignKey: "santri_uuid" });
 
 module.exports = {
   getAll: async (req, res) => {
     try {
-      const dropspot = req.query.dropspot;
+      // const dropspot = req.query.dropspot;
       const search = req.query.cari || "";
       const page = req.query.page || 1;
       const limit = parseInt(req.query.limit) || 25;
       const offset = 0 + (page - 1) * limit;
 
-      let whereCondition = {
-        [Op.or]: {
-          santri_nama: {
-            [Op.like]: "%" + search + "%",
-          },
-          santri_niup: {
-            [Op.like]: "%" + search + "%",
-          },
-        },
-        ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
-        ...(req.role === "wilayah" && { blok_id: req.blok_id }),
-      };
-
       const data = await Penumpang.findAndCountAll({
-        where: whereCondition,
+        where: {
+          [Op.or]: [
+            {
+              "$santri.niup$": {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              "$santri.nama_lengkap$": {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
+          ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
+          ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
+          ...(req.role === "daerah" && {
+            "$santri.id_blok$": req.id_blok,
+          }),
+          ...(req.role === "wilayah" && {
+            "$santri.alias_wilayah$": req.wilayah,
+          }),
+        },
         include: [
           {
             model: Dropspot,
             as: "dropspot",
-            include: ["area"],
+            include: {
+              model: Area,
+              as: "area",
+            },
+          },
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
           },
         ],
         limit: limit,
@@ -41,10 +64,6 @@ module.exports = {
       });
 
       const filterArea = await Area.findAll();
-      const filterDropspot = await Dropspot.findAll();
-      data.rows.map((d) => {
-        d.raw = JSON.parse(d.raw);
-      });
 
       responseHelper.allData(res, page, limit, data, { area: filterArea });
     } catch (err) {

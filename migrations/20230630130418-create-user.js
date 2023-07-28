@@ -13,14 +13,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      santri_nama: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      blok_id: {
-        allowNull: true,
-        type: Sequelize.INTEGER,
-      },
       username: {
         allowNull: false,
         type: Sequelize.STRING,
@@ -31,12 +23,8 @@ module.exports = {
       },
       role: {
         allowNull: false,
-        values: ["sysadmin", "admin", "wilayah"],
+        values: ["sysadmin", "admin", "supervisor", "wilayah", "daerah"],
         type: Sequelize.ENUM,
-      },
-      raw: {
-        allowNull: false,
-        type: Sequelize.TEXT,
       },
       created_at: {
         allowNull: false,
