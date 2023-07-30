@@ -11,7 +11,7 @@ module.exports = {
       const area = req.query.area;
       const search = req.query.cari || "";
       const page = req.query.page || 1;
-      const limit = parseInt(req.query.limit) || 20;
+      const limit = parseInt(req.query.limit) || 200;
       const offset = 0 + (page - 1) * limit;
 
       const data = await Dropspot.findAndCountAll({
