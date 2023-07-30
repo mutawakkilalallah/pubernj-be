@@ -2,33 +2,37 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("user", {
+    await queryInterface.createTable("armada", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      santri_uuid: {
+      dropspot_id: {
         allowNull: false,
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         references: {
-          model: "Santri",
-          key: "uuid",
+          model: "Dropspot",
+          key: "id",
         },
       },
-      username: {
+      pendamping_id: {
+        allowNull: true,
+        type: Sequelize.INTEGER,
+        // references: {
+        //   model: "Pendamping",
+        //   key: "id",
+        // },
+      },
+      nama: {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      password: {
+      type: {
         allowNull: false,
-        type: Sequelize.STRING,
-      },
-      role: {
-        allowNull: false,
-        values: ["sysadmin", "admin", "supervisor", "wilayah", "daerah"],
         type: Sequelize.ENUM,
+        values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
       },
       created_at: {
         allowNull: false,
@@ -41,6 +45,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("user");
+    await queryInterface.dropTable("armada");
   },
 };

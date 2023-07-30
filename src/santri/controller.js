@@ -14,25 +14,24 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 25;
       const offset = 0 + (page - 1) * limit;
 
-      let whereCondition = {
-        [Op.or]: [
-          {
-            nama_lengkap: {
-              [Op.like]: `%${search}%`,
-            },
-          },
-          {
-            niup: {
-              [Op.like]: `%${search}%`,
-            },
-          },
-        ],
-        ...(req.role === "daerah" && { id_blok: req.id_blok }),
-        ...(req.role === "wilayah" && { alias_wilayah: req.wilayah }),
-      };
-
       const data = await Santri.findAndCountAll({
-        where: whereCondition,
+        attributes: { exclude: ["raw"] },
+        where: {
+          [Op.or]: [
+            {
+              nama_lengkap: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              niup: {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
+          ...(req.role === "daerah" && { id_blok: req.id_blok }),
+          ...(req.role === "wilayah" && { alias_wilayah: req.wilayah }),
+        },
         limit: limit,
         offset: offset,
         order: [["updated_at", "DESC"]],

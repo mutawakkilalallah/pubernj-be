@@ -1,21 +1,11 @@
 const { Op } = require("sequelize");
-const {
-  Penumpang,
-  Area,
-  Dropspot,
-  Santri,
-  sequelize,
-} = require("../../models");
-// const dropspotValidation = require("../../validations/dropspot-validation");
+const { Penumpang, Area, Dropspot, Santri } = require("../../models");
+const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
-
-Penumpang.belongsTo(Dropspot, { as: "dropspot", foreignKey: "dropspot_id" });
-Penumpang.belongsTo(Santri, { as: "santri", foreignKey: "santri_uuid" });
 
 module.exports = {
   getAll: async (req, res) => {
     try {
-      // const dropspot = req.query.dropspot;
       const search = req.query.cari || "";
       const page = req.query.page || 1;
       const limit = parseInt(req.query.limit) || 25;
@@ -35,8 +25,22 @@ module.exports = {
               },
             },
           ],
+          ...(req.query.armada === "n" && {
+            armada_id: {
+              [Op.is]: null,
+            },
+          }),
+          ...(req.query.jenis_kelamin && {
+            "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+          }),
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
           ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
+          ...(req.query.blok && {
+            "$santri.id_blok$": req.id_blok,
+          }),
+          ...(req.query.wilayah && {
+            "$santri.alias_wilayah$": req.wilayah,
+          }),
           ...(req.role === "daerah" && {
             "$santri.id_blok$": req.id_blok,
           }),
@@ -64,27 +68,103 @@ module.exports = {
       });
 
       const filterArea = await Area.findAll();
-
+      data.rows.map((d) => {
+        d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;
+      });
       responseHelper.allData(res, page, limit, data, { area: filterArea });
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }
   },
 
-  // getById: async (req, res) => {
-  //   try {
-  //     const data = await Dropspot.findOne({
-  //       where: {
-  //         id: req.params.id,
-  //       },
-  //       include: ["area"],
-  //     });
+  getById: async (req, res) => {
+    try {
+      const data = await Penumpang.findOne({
+        where: {
+          id: req.params.id,
+        },
+        include: [
+          {
+            model: Dropspot,
+            as: "dropspot",
+            include: {
+              model: Area,
+              as: "area",
+            },
+          },
+          {
+            model: Santri,
+            as: "santri",
+          },
+        ],
+      });
+      if (!data) {
+        responseHelper.notFound(res);
+      } else {
+        data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
+        data.santri.raw = JSON.parse(data.santri.raw);
+        responseHelper.oneData(res, data);
+      }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
 
-  //     data ? responseHelper.oneData(res, data) : responseHelper.notFound(res);
-  //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
-  //   }
-  // },
+  updateArmada: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.updateArmada.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        await Penumpang.update(
+          {
+            armada_id: req.params.id,
+          },
+          {
+            where: {
+              id: value.id_penumpang,
+            },
+          }
+        );
+
+        responseHelper.createdOrUpdated(res);
+      }
+      // }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  deleteArmada: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.updateArmada.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        await Penumpang.update(
+          {
+            armada_id: null,
+          },
+          {
+            where: {
+              id: value.id_penumpang,
+            },
+          }
+        );
+
+        responseHelper.createdOrUpdated(res);
+      }
+      // }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
 
   // create: async (req, res) => {
   //   try {

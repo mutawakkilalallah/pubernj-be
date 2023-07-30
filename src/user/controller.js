@@ -1,9 +1,7 @@
 require("dotenv").config();
-const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
-const axios = require("axios");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const { User, Santri, sequelize } = require("../../models");
+const { User, Santri } = require("../../models");
 const userValidation = require("../../validations/user-validation");
 const responseHelper = require("../../helpers/response-helper");
 
@@ -44,6 +42,7 @@ module.exports = {
         },
         limit: limit,
         offset: offset,
+        order: [["updated_at", "DESC"]],
       });
 
       const filterRole = [
@@ -63,10 +62,15 @@ module.exports = {
   getById: async (req, res) => {
     try {
       const data = await User.findOne({
+        attributes: { exclude: ["password"] },
         where: {
           id: req.params.id,
         },
-        include: "santri",
+        include: {
+          model: Santri,
+          as: "santri",
+          attributes: { exclude: ["raw"] },
+        },
       });
 
       if (!data) {

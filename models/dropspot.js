@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Dropspot.belongsTo(models.Area, { as: "area", foreignKey: "area_id" });
     }
   }
   Dropspot.init(

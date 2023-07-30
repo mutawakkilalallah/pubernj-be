@@ -12,14 +12,26 @@ module.exports = {
       santri_uuid: {
         allowNull: false,
         type: Sequelize.STRING,
+        references: {
+          model: "Santri",
+          key: "uuid",
+        },
       },
       dropspot_id: {
         allowNull: true,
         type: Sequelize.INTEGER,
+        references: {
+          model: "Dropspot",
+          key: "id",
+        },
       },
-      bus_id: {
+      armada_id: {
         allowNull: true,
         type: Sequelize.INTEGER,
+        references: {
+          model: "Armada",
+          key: "id",
+        },
       },
       jumlah_bayar: {
         allowNull: false,

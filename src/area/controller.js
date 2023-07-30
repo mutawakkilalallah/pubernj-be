@@ -11,19 +11,22 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 200;
       const offset = 0 + (page - 1) * limit;
 
-      const areas = await Area.findAndCountAll({
+      const data = await Area.findAndCountAll({
         where: {
           [Op.and]: {
             nama: {
-              [Op.like]: "%" + search + "%",
+              [Op.like]: `%${search}%`,
             },
           },
         },
         limit: limit,
         offset: offset,
+        order: [["created_at", "ASC"]],
       });
-
-      responseHelper.allData(res, page, limit, areas);
+      data.rows.map((d) => {
+        d.no_hp = `+62${d.no_hp}`;
+      });
+      responseHelper.allData(res, page, limit, data);
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }
@@ -36,8 +39,12 @@ module.exports = {
           id: req.params.id,
         },
       });
-
-      data ? responseHelper.oneData(res, data) : responseHelper.notFound(res);
+      if (!data) {
+        responseHelper.notFound(res);
+      } else {
+        data.no_hp = `+62${data.no_hp}`;
+        responseHelper.oneData(res, data);
+      }
     } catch (err) {
       responseHelper.serverError(res, err.message);
     }

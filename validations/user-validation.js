@@ -20,9 +20,6 @@ module.exports = {
     }),
   }),
   update: Joi.object({
-    santri_uuid: Joi.required().messages({
-      "any.required": "santri_uuid harus harus diisi",
-    }),
     username: Joi.string().required().messages({
       "string.base": "username harus berisi huruf",
       "string.empty": "username harus tidak boleh kosong",

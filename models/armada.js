@@ -1,17 +1,24 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class Armada extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Armada.belongsTo(models.Dropspot, {
+        as: "dropspot",
+        foreignKey: "dropspot_id",
+      });
+      Armada.hasMany(models.Penumpang, {
+        as: "penumpang",
+        foreignKey: "armada_id",
+      });
     }
   }
-  User.init(
+  Armada.init(
     {
       id: {
         allowNull: false,
@@ -19,26 +26,30 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      santri_uuid: {
+      dropspot_id: {
         allowNull: false,
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         references: {
-          model: "Santri",
-          key: "uuid",
+          model: "Dropspot",
+          key: "id",
         },
       },
-      username: {
+      pendamping_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+        // references: {
+        //   model: "Pendamping",
+        //   key: "id",
+        // },
+      },
+      nama: {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      password: {
+      type: {
         allowNull: false,
-        type: DataTypes.STRING,
-      },
-      role: {
-        allowNull: false,
-        values: ["sysadmin", "admin", "supervisor", "wilayah", "daerah"],
         type: DataTypes.ENUM,
+        values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
       },
       createdAt: {
         allowNull: false,
@@ -53,10 +64,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "User",
+      modelName: "Armada",
       timestamps: true,
-      tableName: "user",
+      tableName: "armada",
     }
   );
-  return User;
+  return Armada;
 };
