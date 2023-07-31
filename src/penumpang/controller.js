@@ -30,6 +30,9 @@ module.exports = {
               [Op.is]: null,
             },
           }),
+          ...(req.query.pembayaran && {
+            $status_bayar$: req.query.pembayaran,
+          }),
           ...(req.query.jenis_kelamin && {
             "$santri.jenis_kelamin$": req.query.jenis_kelamin,
           }),
@@ -65,6 +68,7 @@ module.exports = {
         ],
         limit: limit,
         offset: offset,
+        order: [["updated_at", "DESC"]],
       });
 
       const filterArea = await Area.findAll();
@@ -77,11 +81,11 @@ module.exports = {
     }
   },
 
-  getById: async (req, res) => {
+  getByUuid: async (req, res) => {
     try {
       const data = await Penumpang.findOne({
         where: {
-          id: req.params.id,
+          santri_uuid: req.params.uuid,
         },
         include: [
           {
@@ -154,6 +158,63 @@ module.exports = {
           {
             where: {
               id: value.id_penumpang,
+            },
+          }
+        );
+
+        responseHelper.createdOrUpdated(res);
+      }
+      // }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  updateDropspot: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.updateDropspot.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        await Penumpang.update(
+          {
+            dropspot_id: value.dropspot_id,
+          },
+          {
+            where: {
+              id: req.params.id,
+            },
+          }
+        );
+
+        responseHelper.createdOrUpdated(res);
+      }
+      // }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  updatePembayaran: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.updatePembayaran.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        await Penumpang.update(
+          {
+            jumlah_bayar: value.jumlah_bayar,
+            status_bayar: value.status_bayar,
+          },
+          {
+            where: {
+              id: req.params.id,
             },
           }
         );
