@@ -13,19 +13,43 @@ module.exports = (sequelize, DataTypes) => {
   }
   User.init(
     {
-      id: {
+      uuid: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+      },
+      niup: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+      },
+      id_blok: {
+        allowNull: true,
         type: DataTypes.INTEGER,
       },
-      santri_uuid: {
+      alias_wilayah: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      area_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
+      blok: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      wilayah: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      area: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      nama_lengkap: {
         allowNull: false,
         type: DataTypes.STRING,
-        references: {
-          model: "Santri",
-          key: "uuid",
-        },
       },
       username: {
         allowNull: false,
@@ -37,7 +61,22 @@ module.exports = (sequelize, DataTypes) => {
       },
       role: {
         allowNull: false,
-        values: ["sysadmin", "admin", "supervisor", "wilayah", "daerah"],
+        values: [
+          "sysadmin",
+          "admin",
+          "keuangan",
+          "armada",
+          "p4nj",
+          "supervisor",
+          "wilayah",
+          "daerah",
+          "pendamping",
+        ],
+        type: DataTypes.ENUM,
+      },
+      type: {
+        allowNull: false,
+        values: ["internal", "external"],
         type: DataTypes.ENUM,
       },
       createdAt: {

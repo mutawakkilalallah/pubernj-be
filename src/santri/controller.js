@@ -5,6 +5,7 @@ const { Santri } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
+const { wilayah } = require("../../middleware/authorization");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -31,6 +32,18 @@ module.exports = {
           ],
           ...(req.role === "daerah" && { id_blok: req.id_blok }),
           ...(req.role === "wilayah" && { alias_wilayah: req.wilayah }),
+          ...(req.query.blok && {
+            "$santri.id_blok$": req.query.blok,
+          }),
+          ...(req.query.wilayah && {
+            "$santri.alias_wilayah$": req.query.wilayah,
+          }),
+          ...(req.query.jenis_kelamin && {
+            "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+          }),
+          ...(req.query.status_kepulangan && {
+            "$santri.status_kepulangan$": req.query.status_kepulangan,
+          }),
         },
         limit: limit,
         offset: offset,
@@ -67,7 +80,7 @@ module.exports = {
       const type = req.query.size;
 
       const santri = await axios.get(
-        API_PEDATREN_URL + "/person/" + req.params.uuid,
+        API_PEDATREN_URL + "/person/niup/" + req.params.niup,
         {
           headers: {
             "x-api-key": API_PEDATREN_TOKEN,
@@ -114,6 +127,51 @@ module.exports = {
         res,
         "Terjadi kesalahan saat koneksi ke PEDATREN"
       );
+    }
+  },
+
+  filterWilayah: async (req, res) => {
+    console.log(req.blok);
+    try {
+      let wilayah;
+      if (req.role === "wilayah") {
+        wilayah = await sequelize.query(
+          `SELECT DISTINCT alias_wilayah, wilayah FROM santri WHERE alias_wilayah IS NOT NULL AND alias_wilayah =  '${req.wilayah}';`
+        );
+      } else if (req.role === "daerah") {
+        wilayah = await sequelize.query(
+          `SELECT DISTINCT alias_wilayah, wilayah, id_blok FROM santri WHERE alias_wilayah IS NOT NULL AND id_blok =  '${req.id_blok}';`
+        );
+      } else {
+        wilayah = await sequelize.query(
+          `SELECT DISTINCT alias_wilayah, wilayah FROM santri WHERE alias_wilayah IS NOT NULL;`
+        );
+      }
+      res.json(wilayah[0]);
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
+  filterBlok: async (req, res) => {
+    try {
+      let blok;
+      if (req.role === "wilayah") {
+        blok = await sequelize.query(
+          `SELECT DISTINCT id_blok, blok FROM santri WHERE id_blok IS NOT NULL AND alias_wilayah = '${req.query.alias_wilayah}' AND alias_wilayah = '${req.wilayah}';`
+        );
+      } else if (req.role === "daerah") {
+        blok = await sequelize.query(
+          `SELECT DISTINCT id_blok, blok FROM santri WHERE id_blok IS NOT NULL AND alias_wilayah = '${req.query.alias_wilayah}' AND id_blok = '${req.id_blok}';`
+        );
+      } else {
+        blok = await sequelize.query(
+          `SELECT DISTINCT id_blok, blok FROM santri WHERE id_blok IS NOT NULL AND alias_wilayah = '${req.query.alias_wilayah}';`
+        );
+      }
+      res.json(blok[0]);
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
     }
   },
 };

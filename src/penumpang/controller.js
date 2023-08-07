@@ -39,10 +39,10 @@ module.exports = {
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
           ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
           ...(req.query.blok && {
-            "$santri.id_blok$": req.id_blok,
+            "$santri.id_blok$": req.query.blok,
           }),
           ...(req.query.wilayah && {
-            "$santri.alias_wilayah$": req.wilayah,
+            "$santri.alias_wilayah$": req.query.wilayah,
           }),
           ...(req.role === "daerah" && {
             "$santri.id_blok$": req.id_blok,
@@ -73,7 +73,9 @@ module.exports = {
 
       const filterArea = await Area.findAll();
       data.rows.map((d) => {
-        d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;
+        if (d.dropspot) {
+          d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;
+        }
       });
       responseHelper.allData(res, page, limit, data, { area: filterArea });
     } catch (err) {
@@ -105,7 +107,9 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(res);
       } else {
-        data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
+        if (data.dropspot) {
+          data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
+        }
         data.santri.raw = JSON.parse(data.santri.raw);
         responseHelper.oneData(res, data);
       }

@@ -17,20 +17,8 @@ module.exports = {
         password = value.password;
 
         const data = await User.findOne({
-          attributes: ["santri_uuid", "username", "password", "role"],
           where: {
             username: username,
-          },
-          include: {
-            model: Santri,
-            as: "santri",
-            attributes: [
-              "nama_lengkap",
-              "alias_wilayah",
-              "id_blok",
-              "wilayah",
-              "blok",
-            ],
           },
         });
         if (!data) {
@@ -42,11 +30,12 @@ module.exports = {
           } else {
             const token = await jwt.sign(
               {
-                uuid: data.uuid,
+                nama_lengkap: data.nama_lengkap,
                 username: data.username,
                 role: data.role,
-                wilayah: data.santri.alias_wilayah,
-                id_blok: data.santri.id_blok,
+                wilayah: data.alias_wilayah ? data.alias_wilayah : null,
+                id_blok: data.id_blok ? data.id_blok : null,
+                area: data.area_id ? data.area_id : null,
               },
               JWT_SECRET_KEY,
               {

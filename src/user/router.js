@@ -2,26 +2,30 @@ const express = require("express");
 const {
   getAll,
   getById,
-  create,
   update,
   destroy,
   updatePassword,
   updateRole,
+  createInternal,
+  createExternal,
+  getByNiup,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
 
-router.get("/", access.admin, getAll);
+router.get("/", getAll);
 
-router.get("/:id", access.admin, getById);
+router.get("/:uuid", getById);
 
-router.post("/", access.admin, create);
+router.get("/pilih/:niup", getByNiup);
+router.post("/internal", createInternal);
+router.post("/external", createExternal);
 
-router.put("/password/:id", updatePassword);
+router.put("/password/:uuid", updatePassword);
 router.put("/roles", updateRole);
 
-router.put("/:id", update);
+router.put("/:uuid", update);
 
-router.delete("/:id", access.sysadmin, destroy);
+router.delete("/:uuid", destroy);
 
 module.exports = router;

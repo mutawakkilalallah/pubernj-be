@@ -1,11 +1,20 @@
 const express = require("express");
-const { getAll, getByUuid, getImage } = require("./controller");
+const {
+  getAll,
+  getByUuid,
+  getImage,
+  filterWilayah,
+  filterBlok,
+} = require("./controller");
 const router = express.Router();
 
 router.get("/", getAll);
 
-router.get("/image/:uuid", getImage);
+router.get("/image/:niup", getImage);
 
 router.get("/:uuid", getByUuid);
+
+router.get("/filter/wilayah", filterWilayah);
+router.get("/filter/blok", filterBlok);
 
 module.exports = router;

@@ -1,11 +1,9 @@
 const express = require("express");
 const {
-  generatePenumpangv1,
-  generatePenumpangv2,
-  updatePenumpang,
-  updateUser,
   generateSantri,
   updateSantri,
+  generatePenumpangv1,
+  generatePenumpangv2,
   generatePenumpangv3,
   generatePenumpangv4,
   generatePenumpangv5,
@@ -17,6 +15,8 @@ const {
   generatePenumpangv11,
   generatePenumpangv12,
   excludePenumpang,
+  updatePenumpang,
+  updateUser,
 } = require("./controller");
 const router = express.Router();
 
