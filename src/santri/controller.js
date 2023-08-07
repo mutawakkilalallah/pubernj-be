@@ -33,16 +33,16 @@ module.exports = {
           ...(req.role === "daerah" && { id_blok: req.id_blok }),
           ...(req.role === "wilayah" && { alias_wilayah: req.wilayah }),
           ...(req.query.blok && {
-            "$santri.id_blok$": req.query.blok,
+            id_blok: req.query.blok,
           }),
           ...(req.query.wilayah && {
-            "$santri.alias_wilayah$": req.query.wilayah,
+            alias_wilayah: req.query.wilayah,
           }),
           ...(req.query.jenis_kelamin && {
-            "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+            jenis_kelamin: req.query.jenis_kelamin,
           }),
           ...(req.query.status_kepulangan && {
-            "$santri.status_kepulangan$": req.query.status_kepulangan,
+            status_kepulangan: req.query.status_kepulangan,
           }),
         },
         limit: limit,
