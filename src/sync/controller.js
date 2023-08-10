@@ -499,6 +499,15 @@ function getDataExpired(dataApi, dataDb) {
     .map((item) => item.uuid);
 }
 
+// function getDataExpiredPenumpang(dataSantri, dataPenumpang) {
+//   return dataPenumpang
+//     .filter(
+//       (itemPn) =>
+//         !dataSantri.some((itemSn) => itemSn.uuid === itemPn.santri_uuid)
+//     )
+//     .map((item) => item.santri_uuid);
+// }
+
 module.exports = {
   generateSantri: async (req, res) => {
     try {
@@ -1429,23 +1438,59 @@ module.exports = {
     }
   },
 
-  updatePenumpang: async (req, res) => {
-    try {
-      const data = await Penumpang.findAll();
+  // updatePenumpang: async (req, res) => {
+  //   // let totalBerhasilTambah = 0;
+  //   // let totalGagalTambah = 0;
+  //   // let totalBerhasilDestroy = 0;
+  //   // let totalGagalDestroy = 0;
+  //   try {
+  //     const dataPenumpang = await Penumpang.findAll({
+  //       attributes: ["santri_uuid"],
+  //     });
+  //     const dataSantri = await Santri.findAll({
+  //       attributes: ["uuid"],
+  //     });
 
-      await Promise.all(
-        data.map((d) => processUpdateDataPenumpang(d.id, d.santri_uuid))
-      );
+  //     const dataExpired = getDataExpiredPenumpang(dataSantri, dataPenumpang);
+  //     res.json(dataExpired);
+  //     // const resultDestroy = await Promise.all(
+  //     //   dataExpired.map((d) => processUpdateDataSantri(d))
+  //     // );
 
-      responseHelper.syncSuccess(res);
-    } catch (err) {
-      responseHelper.serverError(
-        res,
-        err.message
-        // "Terjadi kesalahan saat koneksi ke PEDATREN"
-      );
-    }
-  },
+  //     // const berhasilTambah = resultTambah.filter((resultT) => resultT).length;
+  //     // const gagalTambah = resultTambah.filter((resultT) => !resultT).length;
+  //     // const berhasilDestroy = resultDestroy.filter((resultD) => resultD).length;
+  //     // const gagalDestory = resultDestroy.filter((resultD) => !resultD).length;
+
+  //     // totalBerhasilTambah += berhasilTambah;
+  //     // totalGagalTambah += gagalTambah;
+  //     // totalBerhasilDestroy += berhasilDestroy;
+  //     // totalGagalDestroy += gagalDestory;
+
+  //     // console.log(
+  //     //   `didapat data baru : ${dataBaru.length} - diproses data baru  : ${resultTambah.length} | berhasil(${berhasilTambah})/gagal(${gagalTambah})`
+  //     // );
+
+  //     // console.log(
+  //     //   `Total berhasil data baru : ${totalBerhasilTambah}, Total gagal data baru : ${totalGagalTambah}`
+  //     // );
+
+  //     // console.log(
+  //     //   `didapat data expired : ${dataExpired.length} - diproses data expired : ${resultDestroy.length} | berhasil(${berhasilDestroy})/gagal(${gagalDestory})`
+  //     // );
+
+  //     // console.log(
+  //     //   `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
+  //     // );
+  //     // responseHelper.syncSuccess(res);
+  //   } catch (err) {
+  //     responseHelper.serverError(
+  //       res,
+  //       err.message
+  //       // "Terjadi kesalahan saat koneksi ke PEDATREN"
+  //     );
+  //   }
+  // },
 
   updateUser: async (req, res) => {
     try {

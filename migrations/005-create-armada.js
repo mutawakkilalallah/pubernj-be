@@ -32,12 +32,17 @@ module.exports = {
       type: {
         allowNull: false,
         type: Sequelize.ENUM,
-        values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
+        values: ["bus", "minibus", "elf", "hiace", "mpv"],
       },
       jenis: {
         allowNull: false,
         type: Sequelize.ENUM,
         values: ["putri", "putra"],
+      },
+      harga: {
+        allowNull: true,
+        type: Sequelize.BIGINT,
+        defaultValue: 0,
       },
       created_at: {
         allowNull: false,

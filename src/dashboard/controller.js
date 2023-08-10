@@ -5,6 +5,7 @@ const {
   Area,
   Dropspot,
   User,
+  Armada,
   sequelize,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
@@ -41,6 +42,7 @@ module.exports = {
       const totalTidakRombongan = totalSantri - totalPenumpang;
       const totalArea = await Area.count();
       const totalDropspot = await Dropspot.count();
+      const totalArmada = await Armada.count();
       const totalUser = await User.count();
 
       const statDrop = await sequelize.query(`SELECT 
@@ -90,6 +92,7 @@ module.exports = {
             totalArea,
             totalDropspot,
             totalUser,
+            totalArmada,
           },
           stat: dataHasil,
         },

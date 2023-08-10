@@ -123,6 +123,18 @@ module.exports = {
       if (error) {
         responseHelper.badRequest(res, error.message);
       } else {
+        const drop = await Dropspot.findOne({
+          where: {
+            id: value.dropspot_id,
+          },
+          include: {
+            model: Area,
+            as: "area",
+          },
+        });
+        value.nama = `${value.type.toUpperCase()} ${drop.area.nama.toUpperCase()} ${
+          value.nama
+        }`;
         await Armada.create(value);
 
         responseHelper.createdOrUpdated(res);

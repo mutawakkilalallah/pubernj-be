@@ -53,12 +53,17 @@ module.exports = (sequelize, DataTypes) => {
       type: {
         allowNull: false,
         type: DataTypes.ENUM,
-        values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
+        values: ["bus", "minibus", "elf", "hiace", "mpv"],
       },
       jenis: {
         allowNull: false,
         type: DataTypes.ENUM,
         values: ["putri", "putra"],
+      },
+      harga: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+        defaultValue: 0,
       },
       createdAt: {
         allowNull: false,

@@ -203,18 +203,22 @@ module.exports = {
       if (error) {
         responseHelper.badRequest(res, error.message);
       } else {
-        await Penumpang.update(
-          {
-            dropspot_id: value.dropspot_id,
+        const penumpang = await Penumpang.findOne({
+          where: {
+            id: req.params.id,
           },
-          {
-            where: {
-              id: req.params.id,
-            },
-          }
-        );
-
-        responseHelper.createdOrUpdated(res);
+        });
+        if (penumpang.armada_id != null) {
+          responseHelper.badRequest(
+            res,
+            "penumpang ini sudah dimasukkan ke dalam armada"
+          );
+        } else {
+          await penumpang.update({
+            dropspot_id: value.dropspot_id,
+          });
+          responseHelper.createdOrUpdated(res);
+        }
       }
       // }
     } catch (err) {
@@ -283,24 +287,4 @@ module.exports = {
       responseHelper.serverError(res, err.message);
     }
   },
-
-  // destroy: async (req, res) => {
-  //   try {
-  //     const data = await Dropspot.findOne({
-  //       where: {
-  //         id: req.params.id,
-  //       },
-  //     });
-
-  //     if (!data) {
-  //       responseHelper.notFound(res);
-  //     } else {
-  //       await data.destroy();
-
-  //       responseHelper.deleted(res);
-  //     }
-  //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
-  //   }
-  // },
 };

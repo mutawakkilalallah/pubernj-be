@@ -17,6 +17,7 @@ const armadaRouter = require("./src/armada/router");
 const santriRouter = require("./src/santri/router");
 const penumpangRouter = require("./src/penumpang/router");
 const keuanganRouter = require("./src/keuangan/router");
+const statistikRouter = require("./src/statistik/router");
 const userRouter = require("./src/user/router");
 
 const syncRouter = require("./src/sync/router");
@@ -49,6 +50,7 @@ app.use("/armada", auth, armadaRouter);
 app.use("/santri", auth, santriRouter);
 app.use("/penumpang", auth, penumpangRouter);
 app.use("/keuangan", auth, keuanganRouter);
+app.use("/statistik", auth, statistikRouter);
 app.use("/user", auth, userRouter);
 
 app.use("/sync", auth, access.sysadmin, syncRouter);
