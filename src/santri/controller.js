@@ -1,11 +1,11 @@
 require("dotenv").config();
 const { Op } = require("sequelize");
 const { sequelize } = require("../../models");
-const { Santri } = require("../../models");
+const { Santri, Penumpang } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
-const { wilayah } = require("../../middleware/authorization");
+const santriValidation = require("../../validations/santri-validation");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -130,8 +130,48 @@ module.exports = {
     }
   },
 
+  dafatarRombongan: async (req, res) => {
+    try {
+      const { error, value } = santriValidation.updateDropspot.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(res, error.message);
+      } else {
+        const data = await Penumpang.findOne({
+          where: {
+            santri_uuid: req.params.uuid,
+          },
+        });
+        if (data) {
+          responseHelper.badRequest(res, "santri sudah terdaftar di rombongan");
+        } else {
+          await Penumpang.create({
+            santri_uuid: req.params.uuid,
+            dropspot_id: value.dropspot_id,
+          });
+
+          await Santri.update(
+            {
+              status_kepulangan: "rombongan",
+            },
+            {
+              where: {
+                uuid: req.params.uuid,
+              },
+            }
+          );
+
+          responseHelper.createdOrUpdated(res);
+        }
+      }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
   filterWilayah: async (req, res) => {
-    console.log(req.blok);
     try {
       let wilayah;
       if (req.role === "wilayah") {

@@ -5,7 +5,6 @@ const {
   update,
   destroy,
   updatePassword,
-  updateRole,
   createInternal,
   createExternal,
   getByNiup,
@@ -13,19 +12,18 @@ const {
 const router = express.Router();
 const access = require("../../middleware/authorization");
 
-router.get("/", getAll);
+router.get("/", access.admin, getAll);
 
-router.get("/:uuid", getById);
+router.get("/:uuid", access.admin, getById);
 
 router.get("/pilih/:niup", getByNiup);
-router.post("/internal", createInternal);
-router.post("/external", createExternal);
+router.post("/internal", access.admin, createInternal);
+router.post("/external", access.sysadmin, createExternal);
 
 router.put("/password/:uuid", updatePassword);
-router.put("/roles", updateRole);
 
-router.put("/:uuid", update);
+router.put("/:uuid", access.admin, update);
 
-router.delete("/:uuid", destroy);
+router.delete("/:uuid", access.admin, destroy);
 
 module.exports = router;

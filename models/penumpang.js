@@ -65,6 +65,12 @@ module.exports = (sequelize, DataTypes) => {
         values: ["belum-lunas", "kurang", "lebih", "lunas"],
         defaultValue: "belum-lunas",
       },
+      status_keberangkatan: {
+        allowNull: false,
+        type: DataTypes.ENUM,
+        values: ["di-asrama", "di-bus", "di-terima"],
+        defaultValue: "di-asrama",
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

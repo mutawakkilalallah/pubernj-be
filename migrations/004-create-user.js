@@ -69,6 +69,10 @@ module.exports = {
         values: ["internal", "external"],
         type: Sequelize.ENUM,
       },
+      no_hp: {
+        allowNull: true,
+        type: Sequelize.BIGINT,
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

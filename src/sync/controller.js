@@ -1164,7 +1164,7 @@ module.exports = {
       let totalGagal = 0;
       const listNegara = ["Malaysia", "Thailand"];
       const data = await Santri.findAll({
-        limit: 1,
+        limit: 10000,
         where: {
           negara: {
             [Op.in]: listNegara,

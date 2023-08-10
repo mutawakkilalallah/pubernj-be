@@ -16,6 +16,7 @@ module.exports = {
     password: Joi.required().messages({
       "any.required": "password harus diisi",
     }),
+    no_hp: Joi.optional(),
     area_id: Joi.optional(),
     nama_lengkap: Joi.optional(),
   }),
@@ -36,6 +37,7 @@ module.exports = {
     password: Joi.required().messages({
       "any.required": "password harus diisi",
     }),
+    no_hp: Joi.optional(),
     area_id: Joi.optional(),
     niup: Joi.optional(),
   }),
@@ -50,6 +52,7 @@ module.exports = {
       "string.empty": "role harus tidak boleh kosong",
       "any.required": "role harus harus diisi",
     }),
+    no_hp: Joi.optional(),
     area_id: Joi.optional(),
   }),
   updatePassword: Joi.object({

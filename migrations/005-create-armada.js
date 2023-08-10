@@ -17,13 +17,13 @@ module.exports = {
           key: "id",
         },
       },
-      pendamping_id: {
+      user_uuid: {
         allowNull: true,
-        type: Sequelize.INTEGER,
-        // references: {
-        //   model: "Pendamping",
-        //   key: "id",
-        // },
+        type: Sequelize.UUID,
+        references: {
+          model: "User",
+          key: "uuid",
+        },
       },
       nama: {
         allowNull: false,
@@ -33,6 +33,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.ENUM,
         values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
+      },
+      jenis: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        values: ["putri", "putra"],
       },
       created_at: {
         allowNull: false,

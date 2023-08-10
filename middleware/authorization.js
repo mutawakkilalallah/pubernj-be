@@ -3,7 +3,6 @@ const responseHelper = require("../helpers/response-helper");
 module.exports = {
   sysadmin: async (req, res, next) => {
     if (req.role === "sysadmin") {
-      req.role = req.role;
       next();
     } else {
       responseHelper.forbidden(res);
@@ -11,8 +10,6 @@ module.exports = {
   },
   admin: async (req, res, next) => {
     if (req.role === "sysadmin" || req.role === "admin") {
-      req.role = req.role;
-      req.blok_id = req.blok_id ? req.blok_id : null;
       next();
     } else {
       responseHelper.forbidden(res);
@@ -22,10 +19,30 @@ module.exports = {
     if (
       req.role === "sysadmin" ||
       req.role === "admin" ||
-      req.role === "wilayah"
+      req.role === "wilayah" ||
+      req.role === "daerah"
     ) {
-      req.role = req.role;
-      req.blok_id = req.blok_id ? req.blok_id : null;
+      next();
+    } else {
+      responseHelper.forbidden(res);
+    }
+  },
+  internal: async (req, res, next) => {
+    if (req.role != "p4nj" || req.role === "pendamping") {
+      next();
+    } else {
+      responseHelper.forbidden(res);
+    }
+  },
+  keuangan: async (req, res, next) => {
+    if (req.role === "sysadmin" || req.role === "keuangan") {
+      next();
+    } else {
+      responseHelper.forbidden(res);
+    }
+  },
+  armada: async (req, res, next) => {
+    if (req.role === "sysadmin" || req.role === "armada") {
       next();
     } else {
       responseHelper.forbidden(res);

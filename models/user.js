@@ -79,6 +79,10 @@ module.exports = (sequelize, DataTypes) => {
         values: ["internal", "external"],
         type: DataTypes.ENUM,
       },
+      no_hp: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

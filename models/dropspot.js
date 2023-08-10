@@ -50,6 +50,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
+      jam_berangkat: {
+        allowNull: true,
+        type: DataTypes.DATE,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

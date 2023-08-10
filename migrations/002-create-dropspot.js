@@ -40,6 +40,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
       },
+      jam_berangkat: {
+        allowNull: true,
+        type: Sequelize.DATE,
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

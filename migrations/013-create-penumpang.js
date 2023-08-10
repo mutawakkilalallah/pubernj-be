@@ -44,6 +44,12 @@ module.exports = {
         values: ["belum-lunas", "kurang", "lebih", "lunas"],
         defaultValue: "belum-lunas",
       },
+      status_keberangkatan: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        values: ["di-asrama", "di-bus", "di-terima"],
+        defaultValue: "di-asrama",
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

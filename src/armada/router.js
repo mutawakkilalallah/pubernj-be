@@ -1,5 +1,13 @@
 const express = require("express");
-const { getAll, getById, create, update, destroy } = require("./controller");
+const {
+  getAll,
+  getById,
+  create,
+  update,
+  destroy,
+  updatePendamping,
+  deletePendamping,
+} = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
 
@@ -7,10 +15,12 @@ router.get("/", getAll);
 
 router.get("/:id", getById);
 
-router.post("/", access.sysadmin, create);
+router.post("/", access.armada, create);
 
-router.put("/:id", access.sysadmin, update);
+router.put("/:id", access.armada, update);
+router.put("/pendamping/:id", access.admin, updatePendamping);
+router.put("/pendamping/delete/:id", access.admin, deletePendamping);
 
-router.delete("/:id", access.sysadmin, destroy);
+router.delete("/:id", access.armada, destroy);
 
 module.exports = router;

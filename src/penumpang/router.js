@@ -6,8 +6,8 @@ const {
   deleteArmada,
   updateDropspot,
   updatePembayaran,
+  deleteRombongan,
 } = require("./controller");
-// const { getAll, getById, create, update, destroy } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
 
@@ -15,17 +15,13 @@ router.get("/", getAll);
 
 router.get("/:uuid", getByUuid);
 
-// router.post("/", access.sysadmin, create);
+router.put("/armada/delete", access.admin, deleteArmada);
+router.put("/armada/:id", access.admin, updateArmada);
 
-router.put("/armada/delete", deleteArmada);
-router.put("/armada/:id", updateArmada);
+router.delete("/:uuid", access.wilayah, deleteRombongan);
 
-router.put("/dropspot/:id", updateDropspot);
+router.put("/dropspot/:id", access.wilayah, updateDropspot);
 
-router.put("/pembayaran/:id", updatePembayaran);
-
-// router.put("/:id", access.sysadmin, update);
-
-// router.delete("/:id", access.sysadmin, destroy);
+router.put("/pembayaran/:id", access.keuangan, updatePembayaran);
 
 module.exports = router;

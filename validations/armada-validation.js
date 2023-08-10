@@ -10,8 +10,16 @@ module.exports = {
     type: Joi.required().messages({
       "any.required": "type harus diisi",
     }),
+    jenis: Joi.required().messages({
+      "any.required": "jenis harus diisi",
+    }),
     dropspot_id: Joi.required().messages({
       "any.required": "dropspot harus diisi",
+    }),
+  }),
+  updatePendamping: Joi.object({
+    user_uuid: Joi.required().messages({
+      "any.required": "pendamping harus diisi",
     }),
   }),
 };

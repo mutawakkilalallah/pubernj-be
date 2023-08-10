@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "dropspot",
         foreignKey: "dropspot_id",
       });
+      Armada.belongsTo(models.User, {
+        as: "user",
+        foreignKey: "user_uuid",
+      });
       Armada.hasMany(models.Penumpang, {
         as: "penumpang",
         foreignKey: "armada_id",
@@ -34,13 +38,13 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
-      pendamping_id: {
+      user_uuid: {
         allowNull: true,
-        type: DataTypes.INTEGER,
-        // references: {
-        //   model: "Pendamping",
-        //   key: "id",
-        // },
+        type: DataTypes.UUID,
+        references: {
+          model: "User",
+          key: "uuid",
+        },
       },
       nama: {
         allowNull: false,
@@ -50,6 +54,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.ENUM,
         values: ["bus", "mini_bus", "elf", "hiace", "mpv"],
+      },
+      jenis: {
+        allowNull: false,
+        type: DataTypes.ENUM,
+        values: ["putri", "putra"],
       },
       createdAt: {
         allowNull: false,

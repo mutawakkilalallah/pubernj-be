@@ -1,5 +1,12 @@
 const { Op } = require("sequelize");
-const { Penumpang, Area, Dropspot, Santri } = require("../../models");
+const {
+  Penumpang,
+  Area,
+  Dropspot,
+  Santri,
+  Armada,
+  User,
+} = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
 
@@ -99,6 +106,14 @@ module.exports = {
             },
           },
           {
+            model: Armada,
+            as: "armada",
+            include: {
+              model: User,
+              as: "user",
+            },
+          },
+          {
             model: Santri,
             as: "santri",
           },
@@ -109,6 +124,11 @@ module.exports = {
       } else {
         if (data.dropspot) {
           data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
+        }
+        if (data.armada) {
+          if (data.armada.user) {
+            data.armada.user.no_hp = `+62${data.armada.user.no_hp}`;
+          }
         }
         data.santri.raw = JSON.parse(data.santri.raw);
         responseHelper.oneData(res, data);
@@ -202,6 +222,39 @@ module.exports = {
     }
   },
 
+  deleteRombongan: async (req, res) => {
+    try {
+      const data = await Penumpang.findOne({
+        where: {
+          santri_uuid: req.params.uuid,
+        },
+      });
+      if (!data) {
+        responseHelper.notFound(res);
+      } else {
+        await Penumpang.destroy({
+          where: {
+            santri_uuid: req.params.uuid,
+          },
+        });
+
+        await Santri.update(
+          {
+            status_kepulangan: "non-rombongan",
+          },
+          {
+            where: {
+              uuid: req.params.uuid,
+            },
+          }
+        );
+        responseHelper.deleted(res);
+      }
+    } catch (err) {
+      responseHelper.serverError(res, err.message);
+    }
+  },
+
   updatePembayaran: async (req, res) => {
     try {
       const { error, value } = penumpangValidation.updatePembayaran.validate(
@@ -230,51 +283,6 @@ module.exports = {
       responseHelper.serverError(res, err.message);
     }
   },
-
-  // create: async (req, res) => {
-  //   try {
-  //     const { error, value } = dropspotValidation.createAndUpdate.validate(
-  //       req.body
-  //     );
-
-  //     if (error) {
-  //       responseHelper.badRequest(res, error.message);
-  //     } else {
-  //       await Dropspot.create(value);
-
-  //       responseHelper.createdOrUpdated(res);
-  //     }
-  //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
-  //   }
-  // },
-
-  // update: async (req, res) => {
-  //   try {
-  //     const data = await Dropspot.findOne({
-  //       where: {
-  //         id: req.params.id,
-  //       },
-  //     });
-
-  //     if (!data) {
-  //       responseHelper.notFound(res);
-  //     } else {
-  //       const { error, value } = dropspotValidation.createAndUpdate.validate(
-  //         req.body
-  //       );
-  //       if (error) {
-  //         responseHelper.badRequest(res, error.message);
-  //       } else {
-  //         await data.update(value);
-
-  //         responseHelper.createdOrUpdated(res);
-  //       }
-  //     }
-  //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
-  //   }
-  // },
 
   // destroy: async (req, res) => {
   //   try {
