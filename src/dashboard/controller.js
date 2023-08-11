@@ -9,6 +9,7 @@ const {
   sequelize,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
+const logger = require("../../helpers/logger");
 
 // Relasi antara model
 Dropspot.hasMany(Penumpang, { foreignKey: "dropspot_id" });
@@ -81,6 +82,7 @@ module.exports = {
         ]);
       });
 
+      logger.loggerSucces(req, 200);
       res.status(200).json({
         code: 200,
         message: "Berhasil mendapatkan semua data",
@@ -98,7 +100,7 @@ module.exports = {
         },
       });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

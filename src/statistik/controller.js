@@ -1,5 +1,6 @@
 const { sequelize } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
+const logger = require("../../helpers/logger");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -55,7 +56,7 @@ module.exports = {
         },
       });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
   keuangan: async (req, res) => {
@@ -243,6 +244,8 @@ module.exports = {
       ) ongkos ON ds.id = ongkos.dropspot_id
   ) total_data;
   `);
+
+      logger.loggerSucces(req, 200);
       res.status(200).json({
         code: 200,
         message: "success get data keuangan",
@@ -252,7 +255,7 @@ module.exports = {
         },
       });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

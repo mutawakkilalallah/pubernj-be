@@ -84,9 +84,9 @@ module.exports = {
           d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;
         }
       });
-      responseHelper.allData(res, page, limit, data, { area: filterArea });
+      responseHelper.allData(req, res, page, limit, data, { area: filterArea });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -120,7 +120,7 @@ module.exports = {
         ],
       });
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         if (data.dropspot) {
           data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
@@ -131,10 +131,10 @@ module.exports = {
           }
         }
         data.santri.raw = JSON.parse(data.santri.raw);
-        responseHelper.oneData(res, data);
+        responseHelper.oneData(req, res, data);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -145,7 +145,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         await Penumpang.update(
           {
@@ -158,11 +158,11 @@ module.exports = {
           }
         );
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
       // }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -173,7 +173,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         await Penumpang.update(
           {
@@ -186,11 +186,11 @@ module.exports = {
           }
         );
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
       // }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -201,7 +201,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         const penumpang = await Penumpang.findOne({
           where: {
@@ -210,6 +210,7 @@ module.exports = {
         });
         if (penumpang.armada_id != null) {
           responseHelper.badRequest(
+            req,
             res,
             "penumpang ini sudah dimasukkan ke dalam armada"
           );
@@ -217,12 +218,12 @@ module.exports = {
           await penumpang.update({
             dropspot_id: value.dropspot_id,
           });
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
       // }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -234,7 +235,7 @@ module.exports = {
         },
       });
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         await Penumpang.destroy({
           where: {
@@ -252,10 +253,10 @@ module.exports = {
             },
           }
         );
-        responseHelper.deleted(res);
+        responseHelper.deleted(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -266,7 +267,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         await Penumpang.update(
           {
@@ -280,11 +281,11 @@ module.exports = {
           }
         );
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
       // }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

@@ -2,6 +2,7 @@
 const { sequelize } = require("../../models");
 // const areaValidation = require("../../validations/area-validation");
 const responseHelper = require("../../helpers/response-helper");
+const logger = require("../../helpers/logger");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -64,6 +65,7 @@ JOIN
     dropspot d ON subquery.dropspot_id = d.id;
 `);
 
+      logger.loggerSucces(req, 200);
       res.status(200).json({
         code: 200,
         message: "success get data keuangan",
@@ -73,7 +75,7 @@ JOIN
         },
       });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -85,13 +87,13 @@ JOIN
   //       },
   //     });
   //     if (!data) {
-  //       responseHelper.notFound(res);
+  //       responseHelper.notFound(req, res);
   //     } else {
   //       data.no_hp = `+62${data.no_hp}`;
-  //       responseHelper.oneData(res, data);
+  //       responseHelper.oneData(req, res, data);
   //     }
   //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
+  //     responseHelper.serverError(req, res, err.message);
   //   }
   // },
 
@@ -102,14 +104,14 @@ JOIN
   //     );
 
   //     if (error) {
-  //       responseHelper.badRequest(res, error.message);
+  //       responseHelper.badRequest(req, res, error.message);
   //     } else {
   //       await Area.create(value);
 
-  //       responseHelper.createdOrUpdated(res);
+  //       responseHelper.createdOrUpdated(req, res);
   //     }
   //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
+  //     responseHelper.serverError(req, res, err.message);
   //   }
   // },
 
@@ -122,21 +124,21 @@ JOIN
   //     });
 
   //     if (!data) {
-  //       responseHelper.notFound(res);
+  //       responseHelper.notFound(req, res);
   //     } else {
   //       const { error, value } = areaValidation.createAndUpdate.validate(
   //         req.body
   //       );
   //       if (error) {
-  //         responseHelper.badRequest(res, error.message);
+  //         responseHelper.badRequest(req, res, error.message);
   //       } else {
   //         await data.update(value);
 
-  //         responseHelper.createdOrUpdated(res);
+  //         responseHelper.createdOrUpdated(req, res);
   //       }
   //     }
   //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
+  //     responseHelper.serverError(req, res, err.message);
   //   }
   // },
 
@@ -149,14 +151,14 @@ JOIN
   //     });
 
   //     if (!area) {
-  //       responseHelper.notFound(res);
+  //       responseHelper.notFound(req, res);
   //     } else {
   //       await area.destroy();
 
-  //       responseHelper.deleted(res);
+  //       responseHelper.deleted(req, res);
   //     }
   //   } catch (err) {
-  //     responseHelper.serverError(res, err.message);
+  //     responseHelper.serverError(req, res, err.message);
   //   }
   // },
 };

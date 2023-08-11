@@ -5,13 +5,14 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET_KEY } = process.env;
 const bcrypt = require("bcrypt");
 const responseHelper = require("../../helpers/response-helper");
+const logger = require("../../helpers/logger");
 
 module.exports = {
   login: async (req, res) => {
     try {
       const { error, value } = authValidation.login.validate(req.body);
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         username = value.username;
         password = value.password;
@@ -22,11 +23,11 @@ module.exports = {
           },
         });
         if (!data) {
-          responseHelper.forbidden(res);
+          responseHelper.forbidden(req, res);
         } else {
           const validPassword = await bcrypt.compare(password, data.password);
           if (!validPassword) {
-            responseHelper.forbidden(res);
+            responseHelper.forbidden(req, res);
           } else {
             const token = await jwt.sign(
               {
@@ -43,12 +44,13 @@ module.exports = {
               }
             );
             data.password = null;
-            responseHelper.auth(res, token, data);
+            logger.loggerAuth(req, data);
+            responseHelper.auth(req, res, token, data);
           }
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

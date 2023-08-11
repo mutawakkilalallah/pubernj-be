@@ -54,9 +54,9 @@ module.exports = {
         filterRole.push({ key: "sysadmin", value: "sysadmin" });
       }
 
-      responseHelper.allData(res, page, limit, data, { role: filterRole });
+      responseHelper.allData(req, res, page, limit, data, { role: filterRole });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -75,12 +75,12 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
-        responseHelper.oneData(res, data);
+        responseHelper.oneData(req, res, data);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -95,9 +95,9 @@ module.exports = {
         }
       );
 
-      responseHelper.oneData(res, response.data);
+      responseHelper.oneData(req, res, response.data);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -105,7 +105,7 @@ module.exports = {
     try {
       const { error, value } = userValidation.createInternal.validate(req.body);
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         const data = await User.findOne({
           where: {
@@ -113,7 +113,7 @@ module.exports = {
           },
         });
         if (data) {
-          responseHelper.badRequest(res, "data sudah terdaftar");
+          responseHelper.badRequest(req, res, "data sudah terdaftar");
         } else {
           const existsUsername = await User.findOne({
             where: {
@@ -121,7 +121,7 @@ module.exports = {
             },
           });
           if (existsUsername) {
-            responseHelper.badRequest(res, "username sudah ada");
+            responseHelper.badRequest(req, res, "username sudah ada");
           } else {
             const response = await axios.get(
               API_PEDATREN_URL + "/person/niup/" + value.niup,
@@ -170,12 +170,12 @@ module.exports = {
 
             await User.create(value);
 
-            responseHelper.createdOrUpdated(res);
+            responseHelper.createdOrUpdated(req, res);
           }
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -183,7 +183,7 @@ module.exports = {
     try {
       const { error, value } = userValidation.createExternal.validate(req.body);
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         value.password = await bcrypt.hash(value.password, 10);
         value.type = "external";
@@ -199,10 +199,10 @@ module.exports = {
 
         await User.create(value);
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -215,23 +215,23 @@ module.exports = {
       });
 
       if (!user) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         const { error, value } = userValidation.update.validate(req.body);
 
         if (error) {
-          responseHelper.badRequest(res, error.message);
+          responseHelper.badRequest(req, res, error.message);
         } else {
           if (value.role != "p4nj") {
             value.area_id = null;
           }
           await user.update(value);
 
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -244,24 +244,24 @@ module.exports = {
       });
 
       if (!user) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         const { error, value } = userValidation.updatePassword.validate(
           req.body
         );
 
         if (error) {
-          responseHelper.badRequest(res, error.message);
+          responseHelper.badRequest(req, res, error.message);
         } else {
           value.password = await bcrypt.hash(value.password, 10);
 
           await user.update(value);
 
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -274,14 +274,14 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         await data.destroy();
 
-        responseHelper.deleted(res);
+        responseHelper.deleted(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

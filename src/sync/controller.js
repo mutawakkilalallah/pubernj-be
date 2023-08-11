@@ -543,7 +543,7 @@ module.exports = {
 
       responseHelper.syncSuccess(res);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -599,6 +599,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -674,6 +675,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -750,6 +752,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -816,6 +819,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -882,6 +886,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -958,6 +963,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1009,6 +1015,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1081,6 +1088,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1160,6 +1168,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1210,6 +1219,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1260,6 +1270,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1324,6 +1335,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1370,7 +1382,7 @@ module.exports = {
 
       responseHelper.syncSuccess(res);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -1431,6 +1443,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1484,7 +1497,7 @@ module.exports = {
   //     // );
   //     // responseHelper.syncSuccess(res);
   //   } catch (err) {
-  //     responseHelper.serverError(
+  //     responseHelper.serverError(req,
   //       res,
   //       err.message
   //       // "Terjadi kesalahan saat koneksi ke PEDATREN"
@@ -1503,6 +1516,7 @@ module.exports = {
       responseHelper.syncSuccess(res);
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         err.message
         // "Terjadi kesalahan saat koneksi ke PEDATREN"

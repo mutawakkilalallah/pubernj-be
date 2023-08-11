@@ -20,6 +20,7 @@ const keuanganRouter = require("./src/keuangan/router");
 const statistikRouter = require("./src/statistik/router");
 const userRouter = require("./src/user/router");
 
+const logRouter = require("./src/log/router");
 const syncRouter = require("./src/sync/router");
 const publicRouter = require("./src/public/router");
 // const busRouter = require("./src/bus/router");
@@ -53,6 +54,7 @@ app.use("/keuangan", auth, keuanganRouter);
 app.use("/statistik", auth, statistikRouter);
 app.use("/user", auth, userRouter);
 
+app.use("/log", auth, access.sysadmin, logRouter);
 app.use("/sync", auth, access.sysadmin, syncRouter);
 app.use("/cari-santri", publicRouter);
 // app.use("/santri-pulang", homeRouter);

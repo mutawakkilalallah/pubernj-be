@@ -58,9 +58,9 @@ module.exports = {
 
       const area = await Area.findAll();
 
-      responseHelper.allData(res, page, limit, data, { area });
+      responseHelper.allData(req, res, page, limit, data, { area });
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -101,16 +101,16 @@ module.exports = {
         ],
       });
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
         if (data.user) {
           data.user.no_hp = `+62${data.user.no_hp}`;
         }
-        responseHelper.oneData(res, data);
+        responseHelper.oneData(req, res, data);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -121,7 +121,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         const drop = await Dropspot.findOne({
           where: {
@@ -137,10 +137,10 @@ module.exports = {
         }`;
         await Armada.create(value);
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -153,21 +153,21 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         const { error, value } = armadaValidation.createAndUpdate.validate(
           req.body
         );
         if (error) {
-          responseHelper.badRequest(res, error.message);
+          responseHelper.badRequest(req, res, error.message);
         } else {
           await data.update(value);
 
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -180,21 +180,21 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         const { error, value } = armadaValidation.updatePendamping.validate(
           req.body
         );
         if (error) {
-          responseHelper.badRequest(res, error.message);
+          responseHelper.badRequest(req, res, error.message);
         } else {
           await data.update(value);
 
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -207,16 +207,16 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         await data.update({
           user_uuid: null,
         });
 
-        responseHelper.createdOrUpdated(res);
+        responseHelper.createdOrUpdated(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -229,14 +229,14 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         await data.destroy();
 
-        responseHelper.deleted(res);
+        responseHelper.deleted(req, res);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

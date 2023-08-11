@@ -50,9 +50,9 @@ module.exports = {
         order: [["updated_at", "DESC"]],
       });
 
-      responseHelper.allData(res, page, limit, data);
+      responseHelper.allData(req, res, page, limit, data);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -65,13 +65,13 @@ module.exports = {
       });
 
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         data.raw = JSON.parse(data.raw);
-        responseHelper.oneData(res, data);
+        responseHelper.oneData(req, res, data);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -98,7 +98,7 @@ module.exports = {
             responseType: "arraybuffer",
           }
         );
-        responseHelper.imageWithPedatren(res, response.data);
+        responseHelper.imageWithPedatren(req, res, response.data);
       } else if (type === "medium") {
         const response = await axios.get(
           API_PEDATREN_URL + santri.data.fotodiri.medium,
@@ -109,7 +109,7 @@ module.exports = {
             responseType: "arraybuffer",
           }
         );
-        responseHelper.imageWithPedatren(res, response.data);
+        responseHelper.imageWithPedatren(req, res, response.data);
       } else {
         const response = await axios.get(
           API_PEDATREN_URL + santri.data.fotodiri.normal,
@@ -120,10 +120,11 @@ module.exports = {
             responseType: "arraybuffer",
           }
         );
-        responseHelper.imageWithPedatren(res, response.data);
+        responseHelper.imageWithPedatren(req, res, response.data);
       }
     } catch (err) {
       responseHelper.serverError(
+        req,
         res,
         "Terjadi kesalahan saat koneksi ke PEDATREN"
       );
@@ -137,7 +138,7 @@ module.exports = {
       );
 
       if (error) {
-        responseHelper.badRequest(res, error.message);
+        responseHelper.badRequest(req, res, error.message);
       } else {
         const data = await Penumpang.findOne({
           where: {
@@ -145,7 +146,11 @@ module.exports = {
           },
         });
         if (data) {
-          responseHelper.badRequest(res, "santri sudah terdaftar di rombongan");
+          responseHelper.badRequest(
+            req,
+            res,
+            "santri sudah terdaftar di rombongan"
+          );
         } else {
           await Penumpang.create({
             santri_uuid: req.params.uuid,
@@ -163,11 +168,11 @@ module.exports = {
             }
           );
 
-          responseHelper.createdOrUpdated(res);
+          responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -189,7 +194,7 @@ module.exports = {
       }
       res.json(wilayah[0]);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 
@@ -211,7 +216,7 @@ module.exports = {
       }
       res.json(blok[0]);
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

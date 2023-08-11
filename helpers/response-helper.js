@@ -1,21 +1,24 @@
+const logger = require("./logger");
+
 module.exports = {
   // response untuk get semua data setup
-  allDataSetup: (res, data) => {
-    res.status(200).json({
-      code: 200,
-      message: "Setup Berhasil",
-      data: data,
-    });
-  },
+  // allDataSetup: (req, res, data) => {
+  //   res.status(200).json({
+  //     code: 200,
+  //     message: "Setup Berhasil",
+  //     data: data,
+  //   });
+  // },
 
-  syncSuccess: (res) => {
+  syncSuccess: (req, res) => {
     res.status(201).json({
       code: 201,
       message: "Sinkronasi dengan PEDATREN berhasil",
     });
   },
 
-  allData: (res, page, limit, data, filter = []) => {
+  allData: (req, res, page, limit, data, filter = []) => {
+    logger.loggerSucces(req, 200);
     res
       .status(200)
       .set({
@@ -32,24 +35,25 @@ module.exports = {
       });
   },
 
-  allDataWithPedatren: (res, page, limit, data) => {
-    res
-      .status(200)
-      .set({
-        x_total_data: data.headers["x-data-total"],
-        x_page_limit: limit,
-        x_total_page: data.headers["x-pagination-total-page"],
-        x_current_page: page,
-      })
-      .json({
-        code: 200,
-        message: "Berhasil mendapatkan semua data",
-        data: data.data,
-      });
-  },
+  // allDataWithPedatren: (req, res, page, limit, data) => {
+  //   res
+  //     .status(200)
+  //     .set({
+  //       x_total_data: data.headers["x-data-total"],
+  //       x_page_limit: limit,
+  //       x_total_page: data.headers["x-pagination-total-page"],
+  //       x_current_page: page,
+  //     })
+  //     .json({
+  //       code: 200,
+  //       message: "Berhasil mendapatkan semua data",
+  //       data: data.data,
+  //     });
+  // },
 
   //   response untuk get satu data
-  oneData: (res, data) => {
+  oneData: (req, res, data) => {
+    logger.loggerSucces(req, 200);
     res.status(200).json({
       code: 200,
       message: "Berhasil mendapatkan detail data",
@@ -58,17 +62,17 @@ module.exports = {
   },
 
   //   response untuk get satu data dengan data dari pedatren
-  oneDataWithPedatren: (res, data, santri) => {
-    res.status(200).json({
-      code: 200,
-      message: "Berhasil mendapatkan detail data",
-      data: data,
-      santri: santri,
-    });
-  },
+  // oneDataWithPedatren: (req, res, data, santri) => {
+  //   res.status(200).json({
+  //     code: 200,
+  //     message: "Berhasil mendapatkan detail data",
+  //     data: data,
+  //     santri: santri,
+  //   });
+  // },
 
   //   response untuk get satu data dengan data dari pedatren
-  auth: (res, token, data, santri) => {
+  auth: (req, res, token, data, santri) => {
     res.status(200).json({
       code: 200,
       message: "Berhasil login",
@@ -78,12 +82,13 @@ module.exports = {
   },
 
   //   response untuk get image dari pedatren
-  imageWithPedatren: (res, data) => {
+  imageWithPedatren: (req, res, data) => {
     res.contentType("image/jpeg").send(Buffer.from(data, "binary"));
   },
 
   //   response untuk data not found
-  notFound: (res) => {
+  notFound: (req, res) => {
+    logger.loggerError(req, 404, "Not Found", "Data tidak ditemukan");
     res.status(404).json({
       code: 404,
       message: "Not Found",
@@ -92,7 +97,8 @@ module.exports = {
   },
 
   //   response untuk mengubah atau mengubah data
-  createdOrUpdated: (res) => {
+  createdOrUpdated: (req, res) => {
+    logger.loggerAdUp(req);
     res.status(201).json({
       code: 201,
       message: "Berhasil menambahkan atau mengubah data",
@@ -100,7 +106,8 @@ module.exports = {
   },
 
   //   response untuk data bad request
-  badRequest: (res, error) => {
+  badRequest: (req, res, error) => {
+    logger.loggerError(req, 400, "Bad Request", error);
     res.status(400).json({
       code: 400,
       message: "Bad Request",
@@ -109,7 +116,8 @@ module.exports = {
   },
 
   //   response untuk menghapus data
-  deleted: (res) => {
+  deleted: (req, res) => {
+    logger.loggerSucces(req, 204);
     res.status(204).json({
       code: 204,
       message: "Berhasil menghapus data",
@@ -117,7 +125,8 @@ module.exports = {
   },
 
   //  response untuk not authorize
-  unauthorized: (res) => {
+  unauthorized: (req, res) => {
+    logger.loggerError(req, 401, "Unauthorized", "Username / Password Salah");
     res.status(401).json({
       code: 401,
       message: "Unauthorized",
@@ -126,7 +135,8 @@ module.exports = {
   },
 
   //  response untuk not authorize
-  forbidden: (res) => {
+  forbidden: (req, res) => {
+    logger.loggerError(req, 403, "Forbidden", "Anda tidak memiliki akses");
     res.status(403).json({
       code: 403,
       message: "Forbidden",
@@ -135,7 +145,8 @@ module.exports = {
   },
 
   //   response untuk internal server error
-  serverError: (res, error) => {
+  serverError: (req, res, error) => {
+    logger.loggerError(req, 500, "Terjadi kesalahan pada server", error);
     res.status(500).json({
       code: 500,
       message: "Terjadi kesalahan pada server",

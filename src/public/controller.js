@@ -39,19 +39,21 @@ module.exports = {
         ],
       });
       if (!data) {
-        responseHelper.notFound(res);
+        responseHelper.notFound(req, res);
       } else {
         if (data.dropspot) {
           data.dropspot.area.no_hp = `+62${data.dropspot.area.no_hp}`;
         }
-        if (data.armada.user) {
-          data.armada.user.no_hp = `+62${data.armada.user.no_hp}`;
+        if (data.armada) {
+          if (data.armada.user) {
+            data.armada.user.no_hp = `+62${data.armada.user.no_hp}`;
+          }
         }
         data.santri.raw = JSON.parse(data.santri.raw);
-        responseHelper.oneData(res, data);
+        responseHelper.oneData(req, res, data);
       }
     } catch (err) {
-      responseHelper.serverError(res, err.message);
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };
