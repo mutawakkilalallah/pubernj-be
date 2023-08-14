@@ -29,6 +29,10 @@ module.exports = {
           ...(req.query.jenis && { jenis: req.query.jenis }),
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
           ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
+          ...(req.role === "pendamping" && {
+            user_uuid: req.uuid,
+          }),
+          ...(req.role === "p4nj" && { "$dropspot.area_id$": req.area }),
         },
         include: [
           {
@@ -56,7 +60,11 @@ module.exports = {
         }
       });
 
-      const area = await Area.findAll();
+      const area = await Area.findAll({
+        where: {
+          ...(req.role === "p4nj" && { id: req.area }),
+        },
+      });
 
       responseHelper.allData(req, res, page, limit, data, { area });
     } catch (err) {

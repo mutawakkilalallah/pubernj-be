@@ -44,6 +44,7 @@ module.exports = {
             "$santri.jenis_kelamin$": req.query.jenis_kelamin,
           }),
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
+          ...(req.query.armada && { armada_id: req.query.armada }),
           ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
           ...(req.query.blok && {
             "$santri.id_blok$": req.query.blok,
@@ -56,6 +57,12 @@ module.exports = {
           }),
           ...(req.role === "wilayah" && {
             "$santri.alias_wilayah$": req.wilayah,
+          }),
+          ...(req.role === "pendamping" && {
+            "$armada.user_uuid$": req.uuid,
+          }),
+          ...(req.role === "p4nj" && {
+            "$dropspot.area_id$": req.area,
           }),
         },
         include: [
@@ -72,13 +79,21 @@ module.exports = {
             as: "santri",
             attributes: { exclude: ["raw"] },
           },
+          {
+            model: Armada,
+            as: "armada",
+          },
         ],
         limit: limit,
         offset: offset,
         order: [["updated_at", "DESC"]],
       });
 
-      const filterArea = await Area.findAll();
+      const filterArea = await Area.findAll({
+        where: {
+          ...(req.role === "p4nj" && { id: req.area }),
+        },
+      });
       data.rows.map((d) => {
         if (d.dropspot) {
           d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;

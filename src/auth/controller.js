@@ -31,6 +31,7 @@ module.exports = {
           } else {
             const token = await jwt.sign(
               {
+                uuid: data.uuid,
                 nama_lengkap: data.nama_lengkap,
                 username: data.username,
                 role: data.role,

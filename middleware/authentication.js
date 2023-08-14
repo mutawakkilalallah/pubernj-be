@@ -9,11 +9,13 @@ module.exports = async (req, res, next) => {
     if (err) {
       responseHelper.unauthorized(req, res);
     } else {
+      req.uuid = decoded.uuid;
       req.nama_lengkap = decoded.nama_lengkap;
       req.username = decoded.username;
       req.role = decoded.role;
       req.wilayah = decoded.wilayah;
       req.id_blok = decoded.id_blok;
+      req.area = decoded.area;
       next();
     }
   });

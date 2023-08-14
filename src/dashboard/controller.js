@@ -34,16 +34,47 @@ module.exports = {
         where: whereCondition,
       });
       const totalPenumpang = await Penumpang.count({
-        include: {
-          model: Santri,
-          as: "santri",
-          where: whereCondition,
+        where: {
+          ...(req.role === "pendamping" && {
+            "$armada.user_uuid$": req.uuid,
+          }),
+          ...(req.role === "p4nj" && {
+            "$dropspot.area_id$": req.area,
+          }),
         },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            where: whereCondition,
+          },
+          {
+            model: Armada,
+            as: "armada",
+          },
+          {
+            model: Dropspot,
+            as: "dropspot",
+          },
+        ],
       });
       const totalTidakRombongan = totalSantri - totalPenumpang;
       const totalArea = await Area.count();
       const totalDropspot = await Dropspot.count();
-      const totalArmada = await Armada.count();
+      const totalArmada = await Armada.count({
+        where: {
+          ...(req.role === "pendamping" && {
+            user_uuid: req.uuid,
+          }),
+          ...(req.role === "p4nj" && { "$dropspot.area_id$": req.area }),
+        },
+        include: [
+          {
+            model: Dropspot,
+            as: "dropspot",
+          },
+        ],
+      });
       const totalUser = await User.count();
 
       const statDrop = await sequelize.query(`SELECT 
