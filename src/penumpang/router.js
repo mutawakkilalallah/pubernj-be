@@ -7,11 +7,25 @@ const {
   updateDropspot,
   updatePembayaran,
   deleteRombongan,
+  unduhTemplate,
+  importBayar,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
+const multer = require("multer");
+// Konfigurasi Multer untuk menyimpan file yang diunggah
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.get("/", getAll);
+
+router.get("/unduh-template", access.keuangan, unduhTemplate);
+router.post(
+  "/import-pembayaran",
+  access.keuangan,
+  upload.single("excelFile"),
+  importBayar
+);
 
 router.get("/:uuid", getByUuid);
 

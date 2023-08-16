@@ -23,9 +23,6 @@ const userRouter = require("./src/user/router");
 const logRouter = require("./src/log/router");
 const syncRouter = require("./src/sync/router");
 const publicRouter = require("./src/public/router");
-// const busRouter = require("./src/bus/router");
-// const passengerRouter = require("./src/passenger/router");
-// const homeRouter = require("./src/home/router");
 
 app.use(
   cors({
@@ -57,9 +54,6 @@ app.use("/user", auth, userRouter);
 app.use("/log", auth, access.sysadmin, logRouter);
 app.use("/sync", auth, access.sysadmin, syncRouter);
 app.use("/cari-santri", publicRouter);
-// app.use("/santri-pulang", homeRouter);
-// app.use("/bus", auth, busRouter);
-// app.use("/passenger", auth, passengerRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

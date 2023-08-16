@@ -9,6 +9,8 @@ const {
 } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
+const logger = require("../../helpers/logger");
+const ExcelJS = require("exceljs");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -32,7 +34,7 @@ module.exports = {
               },
             },
           ],
-          ...(req.query.armada === "n" && {
+          ...(req.query.masuk_bus === "n" && {
             armada_id: {
               [Op.is]: null,
             },
@@ -302,5 +304,184 @@ module.exports = {
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }
+  },
+
+  unduhTemplate: async (req, res) => {
+    // Buat workbook dan worksheet baru
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet 1");
+
+    // Set header row
+    worksheet.mergeCells("A1:B1");
+    worksheet.getCell("A1").value = "NAMA INSTITUSI";
+    worksheet.getCell("C1").value =
+      "NURUL JADID PAITON PROBOLINGGO, PONDOK PESANTREN";
+    worksheet.mergeCells("A2:B2");
+    worksheet.getCell("A2").value = "NAMA TAGIHAN";
+    worksheet.getCell("C2").value = "PUBER MAULID 2023";
+
+    // Buat baris kosong
+    worksheet.addRow([]);
+
+    // Set kolom A dan B pada baris 4 dan 5
+    worksheet.mergeCells("A4:A5");
+    worksheet.getCell("A4").value = "NO";
+    worksheet.mergeCells("B4:B5");
+    worksheet.getCell("B4").value = "ID AKUN";
+    worksheet.mergeCells("C4:C5");
+    worksheet.getCell("C4").value = "NAMA";
+    worksheet.mergeCells("D4:D5");
+    worksheet.getCell("D4").value = "GRAND TOTAL";
+    worksheet.mergeCells("E4:G4");
+    worksheet.getCell("E4").value = "PUBER MAULID 2023";
+    worksheet.getCell("E5").value = "NOMINAL";
+    worksheet.getCell("F5").value = "DISKON";
+    worksheet.getCell("G5").value = "TOTAL";
+    worksheet.mergeCells("H4:J4");
+    worksheet.getCell("H4").value = "ADMIN PUBER MAULID 2023";
+    worksheet.getCell("H5").value = "NOMINAL";
+    worksheet.getCell("I5").value = "DISKON";
+    worksheet.getCell("J5").value = "TOTAL";
+
+    // Mengisi data pada baris 6 dan seterusnya (disesuaikan dengan data Anda)
+
+    const data = await Penumpang.findAll({
+      attributes: ["id", "santri_uuid", "dropspot_id"],
+      include: [
+        {
+          model: Santri,
+          as: "santri",
+          attributes: ["uuid", "niup", "nama_lengkap"],
+        },
+        {
+          model: Dropspot,
+          as: "dropspot",
+          attributes: ["id", "harga"],
+        },
+      ],
+    });
+
+    data.forEach((rowData, index) => {
+      worksheet.addRow([
+        index + 1,
+        rowData.santri.niup,
+        rowData.santri.nama_lengkap,
+        rowData.dropspot.harga + 1000,
+        400000,
+        400000 - rowData.dropspot.harga,
+        rowData.dropspot.harga,
+        1000,
+        0,
+        1000,
+      ]);
+    });
+
+    // Simpan file Excel ke dalam buffer
+    workbook.xlsx
+      .writeBuffer()
+      .then((buffer) => {
+        // Set header HTTP untuk melakukan download file
+        res.setHeader(
+          "Content-Disposition",
+          'attachment; filename="output.xlsx"'
+        );
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        // Kirim buffer sebagai respons
+        logger.loggerSucces(req, 200);
+        res.send(buffer);
+      })
+      .catch((err) => {
+        console.error("Terjadi kesalahan:", err);
+        res.status(500).send("Terjadi kesalahan saat membuat file Excel.");
+      });
+  },
+
+  importBayar: async (req, res) => {
+    const excelBuffer = req.file.buffer;
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.xlsx
+      .load(excelBuffer)
+      .then(() => {
+        const worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        const data = [];
+
+        // Loop melalui baris 6 ke atas dan ambil kolom B dan D
+        worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+          if (rowNumber >= 6) {
+            const columnBValue = row.getCell("B").value;
+            const columnDValue = row.getCell("D").value;
+
+            // Pastikan nilai tidak kosong sebelum menambahkannya ke array
+            if (columnBValue !== null && columnDValue !== null) {
+              data.push({ niup: columnBValue, total_bayar: columnDValue });
+            }
+          }
+        });
+        const promises = data.map(async (d) => {
+          try {
+            const penumpang = await Penumpang.findOne({
+              include: [
+                {
+                  model: Santri,
+                  as: "santri",
+                  where: {
+                    niup: d.niup,
+                  },
+                },
+                {
+                  model: Dropspot,
+                  as: "dropspot",
+                },
+              ],
+            });
+
+            if (penumpang) {
+              // // Lakukan update pada data yang diperoleh dari Excel
+              penumpang.jumlah_bayar = d.total_bayar;
+              if (penumpang.dropspot.harga === d.total_bayar) {
+                penumpang.status_bayar = "lunas";
+              } else if (penumpang.dropspot.harga < d.total_bayar) {
+                penumpang.status_bayar = "lebih";
+              } else if (penumpang.dropspot.harga != 0 && d.total_bayar === 0) {
+                penumpang.status_bayar = "belum-lunas";
+              } else if (
+                penumpang.dropspot.harga != 0 &&
+                penumpang.dropspot.harga > d.total_bayar
+              ) {
+                penumpang.status_bayar = "kurang";
+              }
+              await penumpang.save();
+            } else {
+              return `Data dengan niup ${d.niup} tidak ditemukan.`;
+            }
+          } catch (error) {
+            return `Terjadi kesalahan: ${error.message}`;
+          }
+        });
+
+        Promise.all(promises)
+          .then((results) => {
+            results.forEach((result) => {
+              //
+            });
+          })
+          .catch((error) => {
+            //
+          });
+
+        responseHelper.createdOrUpdated(req, res);
+      })
+      .catch((err) => {
+        responseHelper.serverError(
+          req,
+          res,
+          "Terjadi kesalahan saat membaca file excel"
+        );
+      });
   },
 };
