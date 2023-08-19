@@ -37,7 +37,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get("/", async (req, res) => {
-  res.send("N.J.O.Y :)");
+  res.send("N.J.O.Y :) 2023");
 });
 
 app.use("/", authRouter);
