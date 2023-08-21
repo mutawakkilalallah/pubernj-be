@@ -7,6 +7,7 @@ const {
   destroy,
   updatePendamping,
   deletePendamping,
+  updateSyncNama,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -17,6 +18,7 @@ router.get("/:id", getById);
 
 router.post("/", access.armada, create);
 
+router.put("/sync-nama", access.armada, updateSyncNama);
 router.put("/:id", access.armada, update);
 router.put("/pendamping/:id", access.admin, updatePendamping);
 router.put("/pendamping/delete/:id", access.admin, deletePendamping);

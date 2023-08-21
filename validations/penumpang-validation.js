@@ -15,8 +15,10 @@ module.exports = {
     jumlah_bayar: Joi.required().messages({
       "any.required": "jumlah pembayaran harus diisi",
     }),
-    status_bayar: Joi.required().messages({
-      "any.required": "status harus diisi",
+  }),
+  updateKeberangkatan: Joi.object({
+    status_keberangkatan: Joi.required().messages({
+      "any.required": "status keberangkatan harus diisi",
     }),
   }),
 };

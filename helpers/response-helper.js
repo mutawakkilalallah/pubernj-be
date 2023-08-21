@@ -11,6 +11,7 @@ module.exports = {
   // },
 
   syncSuccess: (req, res) => {
+    logger.loggerSucces(req, 200);
     res.status(201).json({
       code: 201,
       message: "Sinkronasi dengan PEDATREN berhasil",

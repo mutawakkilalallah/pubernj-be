@@ -6,6 +6,7 @@ const {
   Santri,
   Armada,
   User,
+  Periode,
 } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
@@ -84,6 +85,13 @@ module.exports = {
           {
             model: Armada,
             as: "armada",
+          },
+          {
+            model: Periode,
+            as: "periode",
+            where: {
+              is_active: true,
+            },
           },
         ],
         limit: limit,
@@ -286,10 +294,56 @@ module.exports = {
       if (error) {
         responseHelper.badRequest(req, res, error.message);
       } else {
+        const penumpang = await Penumpang.findOne({
+          where: {
+            id: req.params.id,
+          },
+          include: {
+            model: Dropspot,
+            as: "dropspot",
+          },
+        });
+
+        if (!penumpang) {
+          responseHelper.notFound(req, res);
+        } else {
+          penumpang.jumlah_bayar = value.jumlah_bayar;
+          if (penumpang.dropspot.harga === value.jumlah_bayar) {
+            penumpang.status_bayar = "lunas";
+          } else if (penumpang.dropspot.harga < value.jumlah_bayar) {
+            penumpang.status_bayar = "lebih";
+          } else if (
+            penumpang.dropspot.harga != 0 &&
+            value.jumlah_bayar === 0
+          ) {
+            penumpang.status_bayar = "belum-lunas";
+          } else if (
+            penumpang.dropspot.harga != 0 &&
+            penumpang.dropspot.harga > value.jumlah_bayar
+          ) {
+            penumpang.status_bayar = "kurang";
+          }
+          await penumpang.save();
+          responseHelper.createdOrUpdated(req, res);
+        }
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  updateKeberangkatan: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.updateKeberangkatan.validate(
+        req.body
+      );
+
+      if (error) {
+        responseHelper.badRequest(req, res, error.message);
+      } else {
         await Penumpang.update(
           {
-            jumlah_bayar: value.jumlah_bayar,
-            status_bayar: value.status_bayar,
+            status_keberangkatan: value.status_keberangkatan,
           },
           {
             where: {

@@ -9,6 +9,7 @@ const {
   deleteRombongan,
   unduhTemplate,
   importBayar,
+  updateKeberangkatan,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -35,6 +36,8 @@ router.put("/armada/:id", access.admin, updateArmada);
 router.delete("/:uuid", access.wilayah, deleteRombongan);
 
 router.put("/dropspot/:id", access.wilayah, updateDropspot);
+
+router.put("/pemberangkatan/:id", access.pendamping, updateKeberangkatan);
 
 router.put("/pembayaran/:id", access.keuangan, updatePembayaran);
 

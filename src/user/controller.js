@@ -115,62 +115,66 @@ module.exports = {
         if (data) {
           responseHelper.badRequest(req, res, "data sudah terdaftar");
         } else {
-          const existsUsername = await User.findOne({
-            where: {
-              username: value.username,
-            },
-          });
-          if (existsUsername) {
-            responseHelper.badRequest(req, res, "username sudah ada");
+          if (req.role != "sysadmin" && value.role === "keuangan") {
+            responseHelper.forbidden(req, res);
           } else {
-            const response = await axios.get(
-              API_PEDATREN_URL + "/person/niup/" + value.niup,
-              {
-                headers: {
-                  "x-api-key": API_PEDATREN_TOKEN,
-                },
+            const existsUsername = await User.findOne({
+              where: {
+                username: value.username,
+              },
+            });
+            if (existsUsername) {
+              responseHelper.badRequest(req, res, "username sudah ada");
+            } else {
+              const response = await axios.get(
+                API_PEDATREN_URL + "/person/niup/" + value.niup,
+                {
+                  headers: {
+                    "x-api-key": API_PEDATREN_TOKEN,
+                  },
+                }
+              );
+
+              value.password = await bcrypt.hash(value.password, 10);
+              value.nama_lengkap = response.data.nama_lengkap;
+              value.type = "internal";
+              if (value.role === "daerah") {
+                value.id_blok =
+                  response.data.domisili_santri[
+                    response.data.domisili_santri.length - 1
+                  ].id_blok;
+                value.blok =
+                  response.data.domisili_santri[
+                    response.data.domisili_santri.length - 1
+                  ].blok;
               }
-            );
-
-            value.password = await bcrypt.hash(value.password, 10);
-            value.nama_lengkap = response.data.nama_lengkap;
-            value.type = "internal";
-            if (value.role === "daerah") {
-              value.id_blok =
-                response.data.domisili_santri[
+              if (value.role === "wilayah") {
+                value.wilayah =
+                  response.data.domisili_santri[
+                    response.data.domisili_santri.length - 1
+                  ].wilayah;
+                value.alias_wilayah = response.data.domisili_santri[
                   response.data.domisili_santri.length - 1
-                ].id_blok;
-              value.blok =
-                response.data.domisili_santri[
-                  response.data.domisili_santri.length - 1
-                ].blok;
-            }
-            if (value.role === "wilayah") {
-              value.wilayah =
-                response.data.domisili_santri[
-                  response.data.domisili_santri.length - 1
-                ].wilayah;
-              value.alias_wilayah = response.data.domisili_santri[
-                response.data.domisili_santri.length - 1
-              ].wilayah
-                .toLowerCase()
-                .replace(/ /g, "-");
-            }
-            if (value.role === "p4nj") {
-              const area = await Area.findOne({
-                where: {
-                  id: value.area_id,
-                },
-              });
-              value.area = area.nama;
-            }
-            if (value.role != "p4nj") {
-              value.area_id = null;
-            }
+                ].wilayah
+                  .toLowerCase()
+                  .replace(/ /g, "-");
+              }
+              if (value.role === "p4nj") {
+                const area = await Area.findOne({
+                  where: {
+                    id: value.area_id,
+                  },
+                });
+                value.area = area.nama;
+              }
+              if (value.role != "p4nj") {
+                value.area_id = null;
+              }
 
-            await User.create(value);
+              await User.create(value);
 
-            responseHelper.createdOrUpdated(req, res);
+              responseHelper.createdOrUpdated(req, res);
+            }
           }
         }
       }

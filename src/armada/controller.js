@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op } = require("sequelize");
 const {
   Dropspot,
   Area,
@@ -6,6 +6,7 @@ const {
   Armada,
   Santri,
   User,
+  Periode,
 } = require("../../models");
 const armadaValidation = require("../../validations/armada-validation");
 const responseHelper = require("../../helpers/response-helper");
@@ -28,7 +29,6 @@ module.exports = {
           ...(req.query.type && { type: req.query.type }),
           ...(req.query.jenis && { jenis: req.query.jenis }),
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
-          ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
           ...(req.role === "pendamping" && {
             user_uuid: req.uuid,
           }),
@@ -41,11 +41,25 @@ module.exports = {
             include: {
               model: Area,
               as: "area",
+              where: {
+                ...(req.query.area && { id: req.query.area }),
+              },
             },
           },
           {
             model: User,
             as: "user",
+          },
+          {
+            model: Penumpang,
+            as: "penumpang",
+          },
+          {
+            model: Periode,
+            as: "periode",
+            where: {
+              is_active: true,
+            },
           },
         ],
         limit: limit,
@@ -140,9 +154,15 @@ module.exports = {
             as: "area",
           },
         });
-        value.nama = `${value.type.toUpperCase()} ${drop.area.nama.toUpperCase()} ${
-          value.nama
-        }`;
+        value.nama = `${value.type.toUpperCase()}-${value.jenis.toUpperCase()} ${
+          drop.nama
+        } ${value.nama}`;
+        const periode = await Periode.findOne({
+          where: {
+            is_active: true,
+          },
+        });
+        value.periode_id = periode.id;
         await Armada.create(value);
 
         responseHelper.createdOrUpdated(req, res);
@@ -174,6 +194,59 @@ module.exports = {
           responseHelper.createdOrUpdated(req, res);
         }
       }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  updateSyncNama: async (req, res) => {
+    try {
+      const armada = await Armada.findAll({
+        include: {
+          model: Dropspot,
+          as: "dropspot",
+        },
+      });
+
+      const armadaByDropspot = {};
+      armada.forEach((a) => {
+        const dropspotId = a.dropspot.id;
+        if (!armadaByDropspot[dropspotId]) {
+          armadaByDropspot[dropspotId] = [];
+        }
+        armadaByDropspot[dropspotId].push(a);
+      });
+
+      const promises = [];
+      let totalCounter = 0;
+      for (const group of Object.values(armadaByDropspot)) {
+        let counter = 1;
+        for (const a of group) {
+          try {
+            const [numUpdated, updatedArmada] = await Armada.update(
+              {
+                nama: `${a.type.toUpperCase()}-${a.jenis.toUpperCase()} ${
+                  a.dropspot.nama
+                } ${counter}`,
+              },
+              {
+                where: {
+                  id: a.id,
+                },
+              }
+            );
+            console.log(updatedArmada);
+            counter++;
+            totalCounter++;
+          } catch (error) {
+            console.error(error.message);
+          }
+        }
+        promises.push(Promise.all(group));
+      }
+
+      await Promise.all(promises);
+      res.json("ok");
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }

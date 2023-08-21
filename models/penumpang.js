@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "dropspot",
         foreignKey: "dropspot_id",
       });
+      Penumpang.belongsTo(models.Periode, {
+        as: "periode",
+        foreignKey: "periode_id",
+      });
     }
   }
   Penumpang.init(
@@ -51,6 +55,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         references: {
           model: "Armada",
+          key: "id",
+        },
+      },
+      periode_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+        references: {
+          model: "Periode",
           key: "id",
         },
       },

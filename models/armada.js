@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "user",
         foreignKey: "user_uuid",
       });
+      Armada.belongsTo(models.Periode, {
+        as: "periode",
+        foreignKey: "periode_id",
+      });
       Armada.hasMany(models.Penumpang, {
         as: "penumpang",
         foreignKey: "armada_id",
@@ -44,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
         references: {
           model: "User",
           key: "uuid",
+        },
+      },
+      periode_id: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        references: {
+          model: "Periode",
+          key: "id",
         },
       },
       nama: {

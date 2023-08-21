@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Op } = require("sequelize");
 const { sequelize } = require("../../models");
-const { Santri, Penumpang } = require("../../models");
+const { Santri, Penumpang, Periode } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
@@ -152,9 +152,15 @@ module.exports = {
             "santri sudah terdaftar di rombongan"
           );
         } else {
+          const periode = await Periode.findOne({
+            where: {
+              is_active: true,
+            },
+          });
           await Penumpang.create({
             santri_uuid: req.params.uuid,
             dropspot_id: value.dropspot_id,
+            periode_id: periode.id,
           });
 
           await Santri.update(

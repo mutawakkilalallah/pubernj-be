@@ -541,7 +541,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }
@@ -596,7 +596,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -672,7 +672,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -749,7 +749,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -816,7 +816,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -883,7 +883,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -960,7 +960,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1012,7 +1012,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1085,7 +1085,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1165,7 +1165,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1216,7 +1216,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1267,7 +1267,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1332,7 +1332,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1380,7 +1380,7 @@ module.exports = {
         `Total berhasil: ${totalBerhasil}, Total gagal: ${totalGagal}`
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }
@@ -1440,7 +1440,7 @@ module.exports = {
       console.log(
         `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
       );
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,
@@ -1495,7 +1495,7 @@ module.exports = {
   //     // console.log(
   //     //   `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
   //     // );
-  //     // responseHelper.syncSuccess(res);
+  //     // responseHelper.syncSuccess(req, res);
   //   } catch (err) {
   //     responseHelper.serverError(req,
   //       res,
@@ -1513,7 +1513,7 @@ module.exports = {
         data.map((d) => processUpdateDataUser(d.id, d.role, d.santri_uuid))
       );
 
-      responseHelper.syncSuccess(res);
+      responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
         req,

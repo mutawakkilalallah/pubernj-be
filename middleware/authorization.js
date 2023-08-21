@@ -48,4 +48,11 @@ module.exports = {
       responseHelper.forbidden(req, res);
     }
   },
+  pendamping: async (req, res, next) => {
+    if (req.role === "sysadmin" || req.role === "pendamping") {
+      next();
+    } else {
+      responseHelper.forbidden(req, res);
+    }
+  },
 };
