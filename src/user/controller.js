@@ -42,7 +42,6 @@ module.exports = {
       const filterRole = [
         { key: "admin", value: "admin" },
         { key: "supervisor", value: "supervisor" },
-        { key: "keuangan", value: "keuangan" },
         { key: "armada", value: "armada" },
         { key: "pendamping", value: "pendamping" },
         { key: "wilayah", value: "wilayah" },
@@ -51,7 +50,10 @@ module.exports = {
       ];
 
       if (req.role === "sysadmin") {
-        filterRole.push({ key: "sysadmin", value: "sysadmin" });
+        filterRole.push(
+          { key: "sysadmin", value: "sysadmin" },
+          { key: "keuangan", value: "keuangan" }
+        );
       }
 
       responseHelper.allData(req, res, page, limit, data, { role: filterRole });
