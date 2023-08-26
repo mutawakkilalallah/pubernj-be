@@ -7,11 +7,16 @@ const {
   Armada,
   User,
   Periode,
+  Persyaratan,
 } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
 const logger = require("../../helpers/logger");
 const ExcelJS = require("exceljs");
+const qrcode = require("qrcode");
+const fs = require("fs");
+const path = require("path");
+const { log } = require("console");
 
 module.exports = {
   getAll: async (req, res) => {
@@ -93,6 +98,10 @@ module.exports = {
               is_active: true,
             },
           },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+          },
         ],
         limit: limit,
         offset: offset,
@@ -141,6 +150,10 @@ module.exports = {
           {
             model: Santri,
             as: "santri",
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
           },
         ],
       });
@@ -262,11 +275,17 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(req, res);
       } else {
-        await Penumpang.destroy({
+        const penumpang = await Penumpang.findOne({
           where: {
             santri_uuid: req.params.uuid,
           },
         });
+        await Persyaratan.destroy({
+          where: {
+            penumpang_id: penumpang.id,
+          },
+        });
+        await penumpang.destroy();
 
         await Santri.update(
           {
@@ -537,5 +556,237 @@ module.exports = {
           "Terjadi kesalahan saat membaca file excel"
         );
       });
+  },
+
+  suratJalan: async (req, res) => {
+    try {
+      const data = await Penumpang.findOne({
+        where: {
+          "$santri.niup$": req.params.niup,
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+          },
+        ],
+      });
+      if (!data) {
+        responseHelper.notFound(req, res);
+      } else {
+        data.santri.raw = JSON.parse(data.santri.raw);
+        responseHelper.oneData(req, res, {
+          nama_lengkap: data.santri.nama_lengkap,
+          niup: data.santri.niup,
+          wilayah: data.santri.wilayah,
+          blok: data.santri.blok,
+          alamat: `${data.santri.raw.kecamatan}, ${data.santri.raw.kabupaten}, ${data.santri.raw.provinsi}. ${data.santri.raw.kodepos}.`,
+        });
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  generateQR: async (req, res) => {
+    try {
+      // Isi data yang ingin dienkripsi menjadi QR code
+      const data = req.params.niup;
+
+      const penumpang = await Penumpang.findOne({
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            where: {
+              niup: req.params.niup,
+            },
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+          },
+        ],
+      });
+
+      Persyaratan.update(
+        {
+          izin_pedatren: true,
+        },
+        {
+          where: {
+            penumpang_id: penumpang.id,
+          },
+        }
+      );
+
+      // Mengatur opsi margin/padding menjadi 0
+      const qrCodeOptions = {
+        margin: 0,
+        width: 128,
+        height: 128,
+        maskPattern: 4,
+        color: {
+          dark: "#000000",
+          light: "#ffffff",
+        },
+      };
+
+      // Generate QR code
+      const qrCodeImage = await qrcode.toDataURL(data, qrCodeOptions);
+
+      // Menyimpan QR code ke dalam berkas di direktori qrcode
+      const qrCodePath = path.join(
+        __dirname,
+        "berkas",
+        "qrcode",
+        `${req.params.niup}.png`
+      );
+
+      // Menulis gambar QR code ke dalam berkas
+      await fs.writeFileSync(
+        qrCodePath,
+        qrCodeImage.replace(/^data:image\/png;base64,/, ""),
+        "base64"
+      );
+
+      responseHelper.createdOrUpdated(req, res);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  getQR: async (req, res) => {
+    try {
+      const qrCodePath = path.join(
+        __dirname,
+        "berkas",
+        "qrcode",
+        `${req.params.niup}.png`
+      );
+      const qrCodeBuffer = fs.readFileSync(qrCodePath);
+
+      res.writeHead(200, {
+        "Content-Type": "image/png",
+        "Content-Disposition": `attachment; ${req.params.niup}.png`,
+      });
+      res.end(qrCodeBuffer);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  getAllPersyaratan: async (req, res) => {
+    try {
+      const search = req.query.cari || "";
+      const page = req.query.page || 1;
+      const limit = parseInt(req.query.limit) || 25;
+      const offset = 0 + (page - 1) * limit;
+
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          [Op.or]: [
+            {
+              "$santri.niup$": {
+                [Op.like]: `%${search}%`,
+              },
+            },
+            {
+              "$santri.nama_lengkap$": {
+                [Op.like]: `%${search}%`,
+              },
+            },
+          ],
+          ...(req.query.jenis_kelamin && {
+            "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+          }),
+          ...(req.query.blok && {
+            "$santri.id_blok$": req.query.blok,
+          }),
+          ...(req.query.wilayah && {
+            "$santri.alias_wilayah$": req.query.wilayah,
+          }),
+          ...(req.role === "daerah" && {
+            "$santri.id_blok$": req.id_blok,
+          }),
+          ...(req.role === "wilayah" && {
+            "$santri.alias_wilayah$": req.wilayah,
+          }),
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+          },
+          {
+            model: Periode,
+            as: "periode",
+            where: {
+              is_active: true,
+            },
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+            where: {
+              ...(req.query.lunas_bps && {
+                lunas_bps: req.query.lunas_bps,
+              }),
+              ...(req.query.lunas_kosmara && {
+                lunas_kosmara: req.query.lunas_kosmara,
+              }),
+              ...(req.query.tuntas_fa && {
+                tuntas_fa: req.query.tuntas_fa,
+              }),
+              ...(req.query.bebas_kamtib && {
+                bebas_kamtib: req.query.bebas_kamtib,
+              }),
+            },
+          },
+        ],
+        limit: limit,
+        offset: offset,
+        order: [["updated_at", "DESC"]],
+      });
+
+      responseHelper.allData(req, res, page, limit, data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  ubahPersyaratan: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.ubahPersyaratan.validate(
+        req.body
+      );
+      if (error) {
+        responseHelper.badRequest(req, res, error.message);
+      } else {
+        const persyaratan = await Persyaratan.findOne({
+          where: {
+            penumpang_id: req.params.id,
+          },
+        });
+        if (!persyaratan) {
+          responseHelper.notFound(req, res);
+        } else {
+          if (value.type === "bps") {
+            persyaratan.lunas_bps = !persyaratan.lunas_bps;
+          } else if (value.type === "kosmara") {
+            persyaratan.lunas_kosmara = !persyaratan.lunas_kosmara;
+          } else if (value.type === "fa") {
+            persyaratan.tuntas_fa = !persyaratan.tuntas_fa;
+          } else if (value.type === "kamtib") {
+            persyaratan.bebas_kamtib = !persyaratan.bebas_kamtib;
+          }
+          await persyaratan.save();
+          responseHelper.createdOrUpdated(req, res);
+        }
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
   },
 };

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Op } = require("sequelize");
 const { sequelize } = require("../../models");
-const { Santri, Penumpang, Periode } = require("../../models");
+const { Santri, Penumpang, Periode, Persyaratan } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
 const axios = require("axios");
 const responseHelper = require("../../helpers/response-helper");
@@ -157,12 +157,14 @@ module.exports = {
               is_active: true,
             },
           });
-          await Penumpang.create({
+          const insertedpenumpang = await Penumpang.create({
             santri_uuid: req.params.uuid,
             dropspot_id: value.dropspot_id,
             periode_id: periode.id,
           });
-
+          await Persyaratan.create({
+            penumpang_id: insertedpenumpang.id,
+          });
           await Santri.update(
             {
               status_kepulangan: "rombongan",

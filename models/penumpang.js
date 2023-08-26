@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "periode",
         foreignKey: "periode_id",
       });
+      Penumpang.hasOne(models.Persyaratan, {
+        as: "persyaratan",
+        foreignKey: "penumpang_id",
+      });
     }
   }
   Penumpang.init(

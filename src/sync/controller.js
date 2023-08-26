@@ -5,6 +5,7 @@ const {
   User,
   Santri,
   Dropspot,
+  Persyaratan,
   sequelize,
 } = require("../../models");
 const { API_PEDATREN_URL, API_PEDATREN_TOKEN } = process.env;
@@ -86,9 +87,13 @@ async function processDataPenumpangKec(uuid) {
         },
       });
       if (dropspot.length >= 1) {
-        await Penumpang.create({
+        const insertedpenumpang = await Penumpang.create({
           santri_uuid: data.uuid,
           dropspot_id: dropspot[0].id,
+        });
+
+        await Persyaratan.create({
+          penumpang_id: insertedpenumpang.id,
         });
 
         await Santri.update(
@@ -145,9 +150,13 @@ async function processDataPenumpangKab(uuid) {
       });
 
       if (dropspot.length >= 1) {
-        await Penumpang.create({
+        const insertedpenumpang = await Penumpang.create({
           santri_uuid: data.uuid,
           dropspot_id: dropspot[0].id,
+        });
+
+        await Persyaratan.create({
+          penumpang_id: insertedpenumpang.id,
         });
 
         await Santri.update(
@@ -218,9 +227,13 @@ async function processDataPenumpangProv(uuid) {
       });
 
       if (dropspot.length >= 1) {
-        await Penumpang.create({
+        const insertedpenumpang = await Penumpang.create({
           santri_uuid: data.uuid,
           dropspot_id: dropspot[0].id,
+        });
+
+        await Persyaratan.create({
+          penumpang_id: insertedpenumpang.id,
         });
 
         await Santri.update(
@@ -277,9 +290,13 @@ async function processDataPenumpangNeg(uuid) {
       });
 
       if (dropspot.length >= 1) {
-        await Penumpang.create({
+        const insertedpenumpang = await Penumpang.create({
           santri_uuid: data.uuid,
           dropspot_id: dropspot[0].id,
+        });
+
+        await Persyaratan.create({
+          penumpang_id: insertedpenumpang.id,
         });
 
         await Santri.update(
@@ -334,9 +351,13 @@ async function processDataPenumpangPaiton(uuid) {
       });
 
       if (dropspot.length >= 1) {
-        await Penumpang.create({
+        const insertedpenumpang = await Penumpang.create({
           santri_uuid: data.uuid,
           dropspot_id: dropspot[0].id,
+        });
+
+        await Persyaratan.create({
+          penumpang_id: insertedpenumpang.id,
         });
 
         await Santri.update(
@@ -365,11 +386,17 @@ async function processDataPenumpangPaiton(uuid) {
 
 async function processExclude(uuid) {
   try {
-    await Penumpang.destroy({
+    const penumpang = await Penumpang.findOne({
       where: {
         santri_uuid: uuid,
       },
     });
+    await Persyaratan.destroy({
+      where: {
+        penumpang_id: penumpang.id,
+      },
+    });
+    await penumpang.destroy();
     await Santri.update(
       {
         status_kepulangan: "non-rombongan",
@@ -391,14 +418,17 @@ async function processUpdateDataSantri(uuid) {
   // let transaction;
   try {
     // transaction = await sequelize.transaction();
-    await Penumpang.destroy(
-      {
-        where: {
-          santri_uuid: uuid,
-        },
-      }
-      // { transaction }
-    );
+    const penumpang = await Penumpang.findOne({
+      where: {
+        santri_uuid: uuid,
+      },
+    });
+    await Persyaratan.destroy({
+      where: {
+        penumpang_id: penumpang.id,
+      },
+    });
+    await penumpang.destroy();
     await Santri.destroy(
       {
         where: {

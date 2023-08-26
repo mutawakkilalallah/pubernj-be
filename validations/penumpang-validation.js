@@ -21,4 +21,9 @@ module.exports = {
       "any.required": "status keberangkatan harus diisi",
     }),
   }),
+  ubahPersyaratan: Joi.object({
+    type: Joi.required().messages({
+      "any.required": "type persyaratan harus diisi",
+    }),
+  }),
 };

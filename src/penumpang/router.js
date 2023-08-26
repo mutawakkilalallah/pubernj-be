@@ -10,6 +10,11 @@ const {
   unduhTemplate,
   importBayar,
   updateKeberangkatan,
+  generateQR,
+  getQR,
+  suratJalan,
+  getAllPersyaratan,
+  ubahPersyaratan,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -19,6 +24,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get("/", getAll);
+router.get("/persyaratan", getAllPersyaratan);
 
 router.get("/unduh-template", access.keuangan, unduhTemplate);
 router.post(
@@ -28,7 +34,11 @@ router.post(
   importBayar
 );
 
+router.get("/qrcode/:niup", access.wilayah, getQR);
+router.get("/surat-jalan/:niup", access.wilayah, suratJalan);
 router.get("/:uuid", getByUuid);
+
+router.post("/qrcode/:niup", access.wilayah, generateQR);
 
 router.put("/armada/delete", access.admin, deleteArmada);
 router.put("/armada/:id", access.admin, updateArmada);
@@ -40,5 +50,7 @@ router.put("/dropspot/:id", access.wilayah, updateDropspot);
 router.put("/pemberangkatan/:id", access.pendamping, updateKeberangkatan);
 
 router.put("/pembayaran/:id", access.keuangan, updatePembayaran);
+
+router.put("/persyaratan/:id", access.wilayah, ubahPersyaratan);
 
 module.exports = router;
