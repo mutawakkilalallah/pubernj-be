@@ -67,12 +67,7 @@ module.exports = {
       const data = await User.findOne({
         attributes: { exclude: ["password"] },
         where: {
-          id: req.params.id,
-        },
-        include: {
-          model: Santri,
-          as: "santri",
-          attributes: { exclude: ["raw"] },
+          uuid: req.params.uuid,
         },
       });
 
