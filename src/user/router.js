@@ -14,7 +14,7 @@ const access = require("../../middleware/authorization");
 
 router.get("/", access.admin, getAll);
 
-router.get("/:uuid", access.admin, getById);
+router.get("/:uuid", getById);
 
 router.get("/pilih/:niup", getByNiup);
 router.post("/internal", access.admin, createInternal);
