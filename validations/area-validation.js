@@ -16,5 +16,12 @@ module.exports = {
       "number.base": "nomer hp harus berisi angka",
       "any.required": "nomer hp harus diisi",
     }),
+    pic_ext: Joi.string().optional().messages({
+      "string.base": "pic external harus berisi huruf",
+      "string.empty": "pic external tidak boleh kosong",
+    }),
+    no_hp_ext: Joi.number().integer().optional().messages({
+      "number.base": "nomer hp pic external harus berisi angka",
+    }),
   }),
 };

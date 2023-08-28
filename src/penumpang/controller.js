@@ -580,7 +580,7 @@ module.exports = {
           niup: data.santri.niup,
           wilayah: data.santri.wilayah,
           blok: data.santri.blok,
-          alamat: `${data.santri.raw.kecamatan}, ${data.santri.raw.kabupaten}, ${data.santri.raw.provinsi}. ${data.santri.raw.kodepos}.`,
+          alamat: `${data.santri.raw.kecamatan}, ${data.santri.raw.kabupaten}, ${data.santri.raw.provinsi}.`,
         });
       }
     } catch (err) {

@@ -31,6 +31,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.BIGINT,
       },
+      pic_ext: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      no_hp_ext: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

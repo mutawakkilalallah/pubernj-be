@@ -24,7 +24,8 @@ module.exports = {
               [Op.like]: "%" + search + "%",
             },
           },
-          area_id: area ? area : { [Op.not]: null },
+          ...(req.query.area && { area_id: req.query.area }),
+          ...(req.query.grup && { grup: req.query.grup }),
         },
         include: {
           model: Area,

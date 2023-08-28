@@ -39,9 +39,18 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
-      jam_berangkat: {
+      jam_berangkat_pa: {
         allowNull: true,
         type: DataTypes.DATE,
+      },
+      jam_berangkat_pi: {
+        allowNull: true,
+        type: DataTypes.DATE,
+      },
+      grup: {
+        allowNull: false,
+        type: DataTypes.ENUM,
+        values: ["jatim", "luar-jawa", "luar-pulau"],
       },
       is_active: {
         allowNull: false,

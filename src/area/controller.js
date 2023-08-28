@@ -23,9 +23,6 @@ module.exports = {
         offset: offset,
         order: [["created_at", "ASC"]],
       });
-      data.rows.map((d) => {
-        d.no_hp = `+62${d.no_hp}`;
-      });
       responseHelper.allData(req, res, page, limit, data);
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
@@ -42,7 +39,6 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(req, res);
       } else {
-        data.no_hp = `+62${data.no_hp}`;
         responseHelper.oneData(req, res, data);
       }
     } catch (err) {
