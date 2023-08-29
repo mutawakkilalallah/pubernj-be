@@ -29,6 +29,7 @@ module.exports = {
           ...(req.query.type && { type: req.query.type }),
           ...(req.query.jenis && { jenis: req.query.jenis }),
           ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
+          ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
           ...(req.role === "pendamping" && {
             user_uuid: req.uuid,
           }),
