@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const {
   Penumpang,
   User,
@@ -55,6 +55,68 @@ async function processDataSantri(uuid) {
         : null,
       raw: JSON.stringify(response.data),
     });
+    return true;
+  } catch (err) {
+    console.log(uuid + " : " + err.message);
+    return false;
+  }
+}
+
+async function processDataDomisiliSantri(uuid) {
+  try {
+    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
+      headers: {
+        "x-api-key": API_PEDATREN_TOKEN,
+      },
+    });
+    const santri = await Santri.findOne({
+      where: {
+        uuid: uuid,
+      },
+      attributes: { exclude: ["raw"] },
+    });
+    if (
+      response?.data?.domisili_santri[
+        response?.data?.domisili_santri?.length - 1
+      ].wilayah != santri?.wilayah ||
+      response?.data?.domisili_santri[
+        response?.data?.domisili_santri?.length - 1
+      ].id_blok != santri?.id_blok ||
+      response?.data?.kecamatan != santri?.kecamatan ||
+      response?.data?.kabupaten != santri?.kabupaten ||
+      response?.data?.provinsi != santri?.provinsi ||
+      response?.data?.negara != santri?.negara
+    ) {
+      await santri.update({
+        negara: response?.data?.negara ?? null,
+        provinsi: response?.data?.provinsi ?? null,
+        kabupaten: response?.data?.kabupaten ?? null,
+        kecamatan: response?.data?.kecamatan ?? null,
+        wilayah: response?.data?.domisili_santri
+          ? response?.data?.domisili_santri[
+              response?.data?.domisili_santri?.length - 1
+            ]?.wilayah
+          : null,
+        alias_wilayah: response?.data?.domisili_santri
+          ? response?.data?.domisili_santri[
+              response?.data?.domisili_santri?.length - 1
+            ]?.wilayah
+              .toLowerCase()
+              .replace(/ /g, "-")
+          : null,
+        blok: response?.data?.domisili_santri
+          ? response?.data?.domisili_santri[
+              response?.data?.domisili_santri?.length - 1
+            ]?.blok
+          : null,
+        id_blok: response?.data?.domisili_santri
+          ? response?.data?.domisili_santri[
+              response?.data?.domisili_santri?.length - 1
+            ]?.id_blok
+          : null,
+        raw: JSON.stringify(response?.data),
+      });
+    }
     return true;
   } catch (err) {
     console.log(uuid + " : " + err.message);
@@ -423,12 +485,14 @@ async function processUpdateDataSantri(uuid) {
         santri_uuid: uuid,
       },
     });
-    await Persyaratan.destroy({
-      where: {
-        penumpang_id: penumpang.id,
-      },
-    });
-    await penumpang.destroy();
+    if (penumpang) {
+      await Persyaratan.destroy({
+        where: {
+          penumpang_id: penumpang.id,
+        },
+      });
+      await penumpang.destroy();
+    }
     await Santri.destroy(
       {
         where: {
@@ -1470,6 +1534,56 @@ module.exports = {
       console.log(
         `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
       );
+      responseHelper.syncSuccess(req, res);
+    } catch (err) {
+      responseHelper.serverError(
+        req,
+        res,
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
+      );
+    }
+  },
+
+  updateDomisiliSantri: async (req, res) => {
+    let totalBerhasilUpdate = 0;
+    let totalGagalUpdate = 0;
+    try {
+      const batchSize = 1000;
+      const totalSantri = await Santri.count(); // Ganti dengan jumlah santri yang sesuai
+
+      const totalLoop = Math.ceil(totalSantri / batchSize);
+
+      for (let i = 0; i < totalLoop; i++) {
+        const dataDbPuber = await Santri.findAll({
+          attributes: ["uuid"],
+          // Tambahkan bagian berikut untuk mengatur limit dan offset
+          limit: batchSize,
+          offset: i * batchSize,
+        });
+        const resultUpdate = await Promise.all(
+          dataDbPuber.map((d) => processDataDomisiliSantri(d.uuid))
+        );
+
+        totalBerhasilUpdate += resultUpdate.filter((result) => result).length;
+        totalGagalUpdate += resultUpdate.filter((result) => !result).length;
+
+        console.log(
+          `didapat data baru : ${dataDbPuber.length} - diproses data baru  : ${resultUpdate.length} | berhasil(${totalBerhasilUpdate})/gagal(${totalGagalUpdate})`
+        );
+      }
+
+      // console.log(
+      //   `Total berhasil data baru : ${totalBerhasilTambah}, Total gagal data baru : ${totalGagalTambah}`
+      // );
+
+      // console.log(
+      //   `didapat data expired : ${dataExpired.length} - diproses data expired : ${resultDestroy.length} | berhasil(${berhasilDestroy})/gagal(${gagalDestory})`
+      // );
+
+      // console.log(
+      //   `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
+      // );
       responseHelper.syncSuccess(req, res);
     } catch (err) {
       responseHelper.serverError(
