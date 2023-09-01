@@ -13,6 +13,8 @@ module.exports = {
     area_id: Joi.required().messages({
       "any.required": "area harus diisi",
     }),
+    jam_berangkat_pa: Joi.optional(),
+    jam_berangkat_pi: Joi.optional(),
     cakupan: Joi.string().required().messages({
       "string.base": "cakupan harus berisi huruf",
       "string.empty": "cakupan tidak boleh kosong",
