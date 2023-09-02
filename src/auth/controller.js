@@ -29,7 +29,7 @@ module.exports = {
         } else {
           const validPassword = await bcrypt.compare(password, data.password);
           if (!validPassword) {
-            responseHelper.forbidden(req, res);
+            responseHelper.unauthorized(req, res);
           } else {
             const token = await jwt.sign(
               {
@@ -47,6 +47,9 @@ module.exports = {
               }
             );
             data.password = null;
+            await data.update({
+              is_login: true,
+            });
             logger.loggerAuth(req, data);
             responseHelper.auth(req, res, token, data);
           }

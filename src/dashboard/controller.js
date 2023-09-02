@@ -76,6 +76,11 @@ module.exports = {
         ],
       });
       const totalUser = await User.count();
+      const totalLogin = await User.count({
+        where: {
+          is_login: true,
+        },
+      });
 
       const statDrop = await sequelize.query(`SELECT 
           ds.id AS dropspot_id,
@@ -126,6 +131,7 @@ module.exports = {
             totalDropspot,
             totalUser,
             totalArmada,
+            totalLogin,
           },
           stat: dataHasil,
         },

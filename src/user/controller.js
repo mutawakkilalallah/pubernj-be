@@ -266,6 +266,26 @@ module.exports = {
     }
   },
 
+  setLogout: async (req, res) => {
+    try {
+      const user = await User.findOne({
+        where: {
+          uuid: req.params.uuid,
+        },
+      });
+
+      if (!user) {
+        responseHelper.notFound(req, res);
+      } else {
+        await user.update({
+          is_login: false,
+        });
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
   destroy: async (req, res) => {
     try {
       const data = await User.findOne({

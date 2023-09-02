@@ -8,6 +8,7 @@ const {
   createInternal,
   createExternal,
   getByNiup,
+  setLogout,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -22,6 +23,7 @@ router.post("/external", access.sysadmin, createExternal);
 
 router.put("/password/:uuid", updatePassword);
 
+router.put("/logout/:uuid", setLogout);
 router.put("/:uuid", access.admin, update);
 
 router.delete("/:uuid", access.admin, destroy);

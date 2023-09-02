@@ -83,6 +83,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.BIGINT,
       },
+      is_login: {
+        allowNull: false,
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

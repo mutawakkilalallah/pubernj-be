@@ -8,6 +8,7 @@ const {
   User,
   Periode,
   Persyaratan,
+  Berkas,
 } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
@@ -16,7 +17,25 @@ const ExcelJS = require("exceljs");
 const qrcode = require("qrcode");
 const fs = require("fs");
 const path = require("path");
-const { log } = require("console");
+const multer = require("multer");
+const util = require("util");
+
+// storage untuk surat keterangan
+const storageBerkas = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = `berkas/surat-keterangan`;
+
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split(".").pop();
+    cb(null, `${Date.now()}-${req.params.uuid}.${ext}`);
+  },
+});
 
 module.exports = {
   getAll: async (req, res) => {
@@ -154,6 +173,10 @@ module.exports = {
           {
             model: Persyaratan,
             as: "persyaratan",
+          },
+          {
+            model: Berkas,
+            as: "berkas",
           },
         ],
       });
@@ -784,6 +807,256 @@ module.exports = {
           await persyaratan.save();
           responseHelper.createdOrUpdated(req, res);
         }
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  exportExcel: async (req, res) => {
+    // Buat workbook dan worksheet baru
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet 1");
+
+    const data = await Penumpang.findAll({
+      where: {
+        ...(req.query.pembayaran && {
+          $status_bayar$: req.query.pembayaran,
+        }),
+        ...(req.query.jenis_kelamin && {
+          "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+        }),
+        ...(req.query.dropspot && { dropspot_id: req.query.dropspot }),
+        ...(req.query.area && { "$dropspot.area_id$": req.query.area }),
+        ...(req.query.blok && {
+          "$santri.id_blok$": req.query.blok,
+        }),
+        ...(req.query.wilayah && {
+          "$santri.alias_wilayah$": req.query.wilayah,
+        }),
+      },
+      include: [
+        {
+          model: Santri,
+          as: "santri",
+          attributes: { exclude: ["raw"] },
+        },
+        {
+          model: Persyaratan,
+          as: "persyaratan",
+        },
+        {
+          model: Dropspot,
+          as: "dropspot",
+          include: {
+            model: Area,
+            as: "area",
+          },
+        },
+        {
+          model: Armada,
+          as: "armada",
+          include: {
+            model: User,
+            as: "user",
+          },
+        },
+      ],
+      limit: parseInt(req.query.limit),
+      order: [["updated_at", "DESC"]],
+    });
+
+    // Menambahkan header sesuai dengan parameter
+    const header = [];
+    header.push({ header: "No", key: "no" });
+    header.push({ header: "NIUP", key: "niup" });
+    header.push({ header: "Nama", key: "nama" });
+    header.push({ header: "Jenis Kelamin", key: "jk" });
+
+    if (req.query.in_domisili === "true") {
+      header.push({ header: "Wilayah", key: "wilayah" });
+      header.push({ header: "Daerah", key: "blok" });
+    }
+
+    if (req.query.in_alamat === "true") {
+      header.push({ header: "Kecamatan", key: "kecamatan" });
+      header.push({ header: "Kabupaten", key: "kabupaten" });
+      header.push({ header: "Provinsi", key: "provinsi" });
+    }
+
+    if (req.query.in_dropspot === "true") {
+      header.push({ header: "Area", key: "area" });
+      header.push({ header: "Dropspot", key: "dropspot" });
+      header.push({ header: "Tarif", key: "harga" });
+    }
+
+    if (req.query.in_pembayaran === "true") {
+      header.push({ header: "Jumlah Bayar", key: "jumlah_bayar" });
+      header.push({ header: "Status Pembayaran", key: "status_bayar" });
+    }
+
+    if (req.query.in_persyaratan === "true") {
+      header.push({ header: "BPS", key: "bps" });
+      header.push({ header: "KOS MAKAN", key: "kosmara" });
+      header.push({ header: "FA", key: "fa" });
+      header.push({ header: "KAMTIB", key: "kamtib" });
+    }
+
+    if (req.query.in_armada === "true") {
+      header.push({ header: "Armada", key: "armada" });
+      header.push({ header: "Pendamping", key: "pendamping" });
+      header.push({ header: "Nomor HP", key: "hp" });
+    }
+
+    worksheet.columns = header;
+
+    data.forEach((d, index) => {
+      const row = {
+        no: index + 1,
+        niup: d?.santri?.niup,
+        nama: d?.santri?.nama_lengkap,
+        jk: d?.santri?.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan",
+      };
+
+      if (req.query.in_domisili === "true") {
+        row["wilayah"] = d?.santri?.wilayah;
+        row["blok"] = d?.santri?.blok;
+      }
+
+      if (req.query.in_alamat === "true") {
+        row["kecamatan"] = d?.santri?.kecamatan;
+        row["kabupaten"] = d?.santri?.kabupaten;
+        row["provinsi"] = d?.santri?.provinsi;
+      }
+
+      if (req.query.in_dropspot === "true") {
+        row["area"] = d?.dropspot?.area?.nama;
+        row["dropspot"] = d?.dropspot?.nama;
+        row["harga"] = d?.dropspot?.harga;
+      }
+
+      if (req.query.in_pembayaran === "true") {
+        row["jumlah_bayar"] = d?.jumlah_bayar;
+        row["status_bayar"] =
+          d?.status_bayar != "belum-lunas"
+            ? d?.status_bayar?.toUpperCase()
+            : "BELUM LUNAS";
+      }
+
+      if (req.query.in_persyaratan === "true") {
+        row["bps"] =
+          d?.persyaratan?.lunas_bps === true ? "LUNAS" : "BELUM LUNAS";
+        row["kosmara"] =
+          d?.persyaratan?.lunas_kosmara === true ? "LUNAS" : "BELUM LUNAS";
+        row["fa"] =
+          d?.persyaratan?.tuntas_fa === true ? "TUNTAS" : "BELUM TUNTAS";
+        row["kamtib"] =
+          d?.persyaratan?.bebas_kamtib === true ? "BEBAS" : "BELUM BEBAS";
+      }
+
+      if (req.query.in_armada === "true") {
+        row["armada"] = d?.armada?.nama;
+        row["pendamping"] = d?.armada?.user?.nama_lengkap;
+        row["hp"] = d?.armada?.user?.no_hp;
+      }
+
+      worksheet.addRow(row);
+    });
+
+    // Simpan file Excel ke dalam buffer
+    workbook.xlsx
+      .writeBuffer()
+      .then((buffer) => {
+        // Set header HTTP untuk melakukan download file
+        res.setHeader(
+          "Content-Disposition",
+          'attachment; filename="data-penumpang.xlsx"'
+        );
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        // Kirim buffer sebagai respons
+        logger.loggerSucces(req, 200);
+        res.send(buffer);
+      })
+      .catch((err) => {
+        console.error("Terjadi kesalahan:", err);
+        res.status(500).send("Terjadi kesalahan saat membuat file Excel.");
+      });
+  },
+
+  uploadBerkas: async (req, res) => {
+    try {
+      const data = await Penumpang.findOne({
+        where: {
+          santri_uuid: req.params.uuid,
+        },
+      });
+      if (!data) {
+        return responseHelper.notFound(req, res);
+      }
+
+      const multerUpload = util.promisify(
+        multer({ storage: storageBerkas }).single("berkas")
+      );
+
+      await multerUpload(req, res);
+
+      let filePath;
+
+      if (req.file) {
+        filePath = req.file.path;
+        await Berkas.create({
+          penumpang_id: data.id,
+          type: req.body.type,
+          description: req.body.description,
+          path: filePath,
+        });
+
+        return responseHelper.createdOrUpdated(req, res);
+      } else {
+        return responseHelper.badRequest(req, res, "file harus di isi");
+      }
+    } catch (err) {
+      return responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  getBerkas: async (req, res) => {
+    const fileName = req.params.path;
+    try {
+      const fileExtension = path.extname(fileName);
+      const filePath = path.resolve(__dirname, "../..", fileName);
+      const fileBuffer = fs.readFileSync(filePath);
+
+      res.writeHead(200, {
+        "Content-Type": `image/${fileExtension.substr(1)}`,
+      });
+      res.end(fileBuffer);
+      logger.loggerSucces(req, 200);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  deleteBerkas: async (req, res) => {
+    try {
+      const data = await Berkas.findOne({
+        where: {
+          id: req.params.id,
+        },
+      });
+      if (!data) {
+        responseHelper.notFound(req, res);
+      } else {
+        const filePath = path.resolve(__dirname, "../..", data.path);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          await data.destroy();
+        }
+        responseHelper.deleted(req, res);
       }
     } catch (err) {
       responseHelper.serverError(req, res, err.message);

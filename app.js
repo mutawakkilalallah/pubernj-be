@@ -33,8 +33,8 @@ app.use(
   })
 );
 
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", async (req, res) => {
   res.send("N.J.O.Y :) 2023");

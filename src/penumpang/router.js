@@ -15,6 +15,10 @@ const {
   suratJalan,
   getAllPersyaratan,
   ubahPersyaratan,
+  exportExcel,
+  uploadBerkas,
+  getBerkas,
+  deleteBerkas,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -26,6 +30,7 @@ const upload = multer({ storage: storage });
 router.get("/", getAll);
 router.get("/persyaratan", getAllPersyaratan);
 
+router.get("/export-excel", exportExcel);
 router.get("/unduh-template", access.keuangan, unduhTemplate);
 router.post(
   "/import-pembayaran",
@@ -34,15 +39,19 @@ router.post(
   importBayar
 );
 
+router.post("/upload-berkas/:uuid", access.wilayah, uploadBerkas);
+
 router.get("/qrcode/:niup", access.wilayah, getQR);
 router.get("/surat-jalan/:niup", access.wilayah, suratJalan);
 router.get("/:uuid", getByUuid);
+router.get("/:path(*)", access.wilayah, getBerkas);
 
 router.post("/qrcode/:niup", access.wilayah, generateQR);
 
 router.put("/armada/delete", access.admin, deleteArmada);
 router.put("/armada/:id", access.admin, updateArmada);
 
+router.delete("/berkas/:id", access.admin, deleteBerkas);
 router.delete("/:uuid", access.wilayah, deleteRombongan);
 
 router.put("/dropspot/:id", access.wilayah, updateDropspot);
