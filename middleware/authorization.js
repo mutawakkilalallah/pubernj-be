@@ -41,6 +41,13 @@ module.exports = {
       responseHelper.forbidden(req, res);
     }
   },
+  bps: async (req, res, next) => {
+    if (req.role === "sysadmin" || req.role === "bps") {
+      next();
+    } else {
+      responseHelper.forbidden(req, res);
+    }
+  },
   armada: async (req, res, next) => {
     if (req.role === "sysadmin" || req.role === "armada") {
       next();

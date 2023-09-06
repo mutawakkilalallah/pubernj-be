@@ -19,6 +19,8 @@ const {
   uploadBerkas,
   getBerkas,
   deleteBerkas,
+  exportPersyaratan,
+  importPersyaratan,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -31,12 +33,19 @@ router.get("/", getAll);
 router.get("/persyaratan", getAllPersyaratan);
 
 router.get("/export-excel", exportExcel);
+router.get("/export-persyaratan", exportPersyaratan);
 router.get("/unduh-template", access.keuangan, unduhTemplate);
 router.post(
   "/import-pembayaran",
   access.keuangan,
   upload.single("excelFile"),
   importBayar
+);
+router.post(
+  "/import-persyaratan",
+  access.bps,
+  upload.single("excelFile"),
+  importPersyaratan
 );
 
 router.post("/upload-berkas/:uuid", access.wilayah, uploadBerkas);

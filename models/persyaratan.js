@@ -8,7 +8,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      //
+      Persyaratan.belongsTo(models.Penumpang, {
+        as: "penumpang",
+        foreignKey: "id",
+      });
     }
   }
   Persyaratan.init(

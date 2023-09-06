@@ -52,7 +52,8 @@ module.exports = {
       if (req.role === "sysadmin") {
         filterRole.push(
           { key: "sysadmin", value: "sysadmin" },
-          { key: "keuangan", value: "keuangan" }
+          { key: "keuangan", value: "keuangan" },
+          { key: "bps", value: "bps" }
         );
       }
 

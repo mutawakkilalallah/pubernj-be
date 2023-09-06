@@ -65,6 +65,7 @@ module.exports = (sequelize, DataTypes) => {
           "sysadmin",
           "admin",
           "keuangan",
+          "bps",
           "armada",
           "p4nj",
           "supervisor",

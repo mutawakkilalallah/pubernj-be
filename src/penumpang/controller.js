@@ -79,6 +79,16 @@ module.exports = {
           ...(req.query.wilayah && {
             "$santri.alias_wilayah$": req.query.wilayah,
           }),
+          // ...(req.query.hak_pulang && {
+          //   [Op.or]: [
+          //     {
+          //       status_bayar:
+          //         req.query.hak_pulang === "true"
+          //           ? { [Op.in]: ["lunas", "lebih"] }
+          //           : { [Op.notIn]: ["lunas", "lebih"] },
+          //     },
+          //   ],
+          // }),
           ...(req.role === "daerah" && {
             "$santri.id_blok$": req.id_blok,
           }),
@@ -120,6 +130,14 @@ module.exports = {
           {
             model: Persyaratan,
             as: "persyaratan",
+            where: {
+              ...(req.query.hak_pulang && {
+                lunas_bps: req.query.hak_pulang,
+                lunas_kosmara: req.query.hak_pulang,
+                tuntas_fa: req.query.hak_pulang,
+                bebas_kamtib: req.query.hak_pulang,
+              }),
+            },
           },
         ],
         limit: limit,
@@ -443,6 +461,20 @@ module.exports = {
 
     const data = await Penumpang.findAll({
       attributes: ["id", "santri_uuid", "dropspot_id"],
+      where: {
+        ...(req.query.blok && {
+          "$santri.id_blok$": req.query.blok,
+        }),
+        ...(req.query.wilayah && {
+          "$santri.alias_wilayah$": req.query.wilayah,
+        }),
+        ...(req.query.pembayaran && {
+          $status_bayar$: req.query.pembayaran,
+        }),
+        ...(req.query.jenis_kelamin && {
+          "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+        }),
+      },
       include: [
         {
           model: Santri,
@@ -1061,5 +1093,168 @@ module.exports = {
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }
+  },
+
+  exportPersyaratan: async (req, res) => {
+    // Buat workbook dan worksheet baru
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet 1");
+
+    const data = await Penumpang.findAll({
+      attributes: ["id", "santri_uuid"],
+      where: {
+        ...(req.query.jenis_kelamin && {
+          "$santri.jenis_kelamin$": req.query.jenis_kelamin,
+        }),
+        ...(req.query.blok && {
+          "$santri.id_blok$": req.query.blok,
+        }),
+        ...(req.query.wilayah && {
+          "$santri.alias_wilayah$": req.query.wilayah,
+        }),
+      },
+      include: [
+        {
+          model: Santri,
+          as: "santri",
+          attributes: { exclude: ["raw"] },
+        },
+        {
+          model: Persyaratan,
+          as: "persyaratan",
+        },
+      ],
+      order: [["updated_at", "DESC"]],
+    });
+
+    // Menambahkan header sesuai dengan parameter
+    const header = [];
+    header.push({ header: "No", key: "no" });
+    header.push({ header: "NIUP", key: "niup" });
+    header.push({ header: "Nama", key: "nama" });
+    header.push({ header: "Jenis Kelamin", key: "jk" });
+    header.push({ header: "Status Pembayaran", key: "status" });
+
+    worksheet.columns = header;
+
+    data.forEach((d, index) => {
+      const row = {
+        no: index + 1,
+        niup: d?.santri?.niup,
+        nama: d?.santri?.nama_lengkap,
+        jk: d?.santri?.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan",
+      };
+
+      if (req.query.jenis === "bps") {
+        row["status"] =
+          d?.persyaratan?.lunas_bps === true ? "lunas" : "belum lunas";
+      }
+
+      if (req.query.jenis === "kosmara") {
+        row["status"] =
+          d?.persyaratan?.lunas_kosmara === true ? "lunas" : "belum lunas";
+      }
+
+      worksheet.addRow(row);
+    });
+
+    // Simpan file Excel ke dalam buffer
+    workbook.xlsx
+      .writeBuffer()
+      .then((buffer) => {
+        // Set header HTTP untuk melakukan download file
+        res.setHeader(
+          "Content-Disposition",
+          'attachment; filename="template.xlsx"'
+        );
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        // Kirim buffer sebagai respons
+        logger.loggerSucces(req, 200);
+        res.send(buffer);
+      })
+      .catch((err) => {
+        console.error("Terjadi kesalahan:", err);
+        res.status(500).send("Terjadi kesalahan saat membuat file Excel.");
+      });
+  },
+
+  importPersyaratan: async (req, res) => {
+    const excelBuffer = req.file.buffer;
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.xlsx
+      .load(excelBuffer)
+      .then(() => {
+        const worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        const data = [];
+
+        // Loop melalui baris 2 ke atas dan ambil kolom B dan E
+        worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+          if (rowNumber >= 2) {
+            const columnBValue = row.getCell("B").value;
+            const columnEValue = row.getCell("E").value;
+
+            // Pastikan nilai tidak kosong sebelum menambahkannya ke array
+            if (columnBValue !== null && columnEValue !== null) {
+              data.push({ niup: columnBValue, status: columnEValue });
+            }
+          }
+        });
+        const promises = data.map(async (d) => {
+          try {
+            const santri = await Santri.findOne({
+              attributes: ["uuid"],
+              where: {
+                niup: d.niup,
+              },
+              include: {
+                model: Penumpang,
+                as: "penumpang",
+                attributes: ["id"],
+              },
+            });
+            const persyaratan = await Persyaratan.findOne({
+              where: {
+                penumpang_id: santri?.penumpang?.id,
+              },
+            });
+            if (persyaratan) {
+              if (req.query.jenis === "bps") {
+                persyaratan.lunas_bps = d.status === "lunas" ? true : false;
+              } else if (req.query.jenis === "kosmara") {
+                persyaratan.lunas_kosmara = d.status === "lunas" ? true : false;
+              }
+              await persyaratan.save();
+            } else {
+              return `Data dengan niup ${d.niup} tidak ditemukan.`;
+            }
+          } catch (error) {
+            return `Terjadi kesalahan: ${error.message}`;
+          }
+        });
+
+        Promise.all(promises)
+          .then((results) => {
+            results.forEach((result) => {
+              //
+            });
+          })
+          .catch((error) => {
+            //
+          });
+
+        responseHelper.createdOrUpdated(req, res);
+      })
+      .catch((err) => {
+        responseHelper.serverError(
+          req,
+          res,
+          "Terjadi kesalahan saat membaca file excel"
+        );
+      });
   },
 };

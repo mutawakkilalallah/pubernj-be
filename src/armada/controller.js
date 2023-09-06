@@ -67,7 +67,6 @@ module.exports = {
         offset: offset,
         order: [["updated_at", "DESC"]],
       });
-
       data.rows.map((d) => {
         d.dropspot.area.no_hp = `+62${d.dropspot.area.no_hp}`;
         if (d.user) {

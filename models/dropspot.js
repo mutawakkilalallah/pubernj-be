@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       grup: {
         allowNull: false,
         type: DataTypes.ENUM,
-        values: ["jatim", "luar-jawa", "luar-pulau"],
+        values: ["jatim", "jawa-non-jatim", "luar-jawa", "luar-pulau"],
       },
       is_active: {
         allowNull: false,
