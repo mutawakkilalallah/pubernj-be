@@ -6,6 +6,7 @@ const {
   filterWilayah,
   filterBlok,
   dafatarRombongan,
+  getByCard,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -14,6 +15,7 @@ router.get("/", access.internal, getAll);
 
 router.get("/image/:niup", getImage);
 
+router.get("/card/:card", access.internal, getByCard);
 router.get("/:uuid", access.internal, getByUuid);
 router.post("/daftar/:uuid", access.wilayah, dafatarRombongan);
 

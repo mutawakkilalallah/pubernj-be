@@ -1210,7 +1210,7 @@ module.exports = {
               }
             } else if (req.query.jenis === "kosmara") {
               // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-              if (columnBValue !== null && columnCValue !== null) {
+              if (columnAValue !== null && columnCValue !== null) {
                 data.push({ niup: columnAValue, status: columnCValue });
               }
             }

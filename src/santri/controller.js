@@ -75,6 +75,22 @@ module.exports = {
     }
   },
 
+  getByCard: async (req, res) => {
+    try {
+      const resp = await axios.get(
+        API_PEDATREN_URL + "/person/card/" + req.params.card,
+        {
+          headers: {
+            "x-api-key": API_PEDATREN_TOKEN,
+          },
+        }
+      );
+      responseHelper.oneData(req, res, resp.data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
   getImage: async (req, res) => {
     try {
       const type = req.query.size;
