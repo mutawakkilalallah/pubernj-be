@@ -43,7 +43,6 @@ router.post(
 );
 router.post(
   "/import-persyaratan",
-  access.bps,
   upload.single("excelFile"),
   importPersyaratan
 );
@@ -69,6 +68,6 @@ router.put("/pemberangkatan/:id", access.pendamping, updateKeberangkatan);
 
 router.put("/pembayaran/:id", access.keuangan, updatePembayaran);
 
-router.put("/persyaratan/:id", access.wilayah, ubahPersyaratan);
+router.put("/persyaratan/:id", ubahPersyaratan);
 
 module.exports = router;
