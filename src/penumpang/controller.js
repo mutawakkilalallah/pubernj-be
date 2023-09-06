@@ -542,11 +542,11 @@ module.exports = {
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
           if (rowNumber >= 6) {
             const columnBValue = row.getCell("B").value;
-            const columnDValue = row.getCell("D").value;
+            const columnGValue = row.getCell("G").value;
 
             // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-            if (columnBValue !== null && columnDValue !== null) {
-              data.push({ niup: columnBValue, total_bayar: columnDValue });
+            if (columnBValue !== null && columnGValue !== null) {
+              data.push({ niup: columnBValue, total_bayar: columnGValue });
             }
           }
         });
@@ -1190,19 +1190,18 @@ module.exports = {
       .load(excelBuffer)
       .then(() => {
         let worksheet;
-        if (req.query.jenis === "bps") {
-          worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
-        } else if (req.query.jenis === "kosmara") {
-          worksheet = workbook.getWorksheet("data_invoice"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
-        }
+        worksheet = workbook.getWorksheet("Sheet 1");
         const data = [];
 
         // Loop melalui baris 2 ke atas dan ambil kolom B dan E
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
           if (rowNumber >= 2) {
+            // baca excel KOSMARA
+            const columnAValue = row.getCell("A").value;
+            const columnCValue = row.getCell("C").value;
+            // baca excel BPS
             const columnBValue = row.getCell("B").value;
             const columnEValue = row.getCell("E").value;
-            const columnIValue = row.getCell("I").value;
 
             if (req.query.jenis === "bps") {
               // Pastikan nilai tidak kosong sebelum menambahkannya ke array
@@ -1211,8 +1210,8 @@ module.exports = {
               }
             } else if (req.query.jenis === "kosmara") {
               // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-              if (columnBValue !== null && columnIValue !== null) {
-                data.push({ niup: columnBValue, status: columnIValue });
+              if (columnBValue !== null && columnCValue !== null) {
+                data.push({ niup: columnAValue, status: columnCValue });
               }
             }
           }
@@ -1239,7 +1238,7 @@ module.exports = {
               if (req.query.jenis === "bps") {
                 persyaratan.lunas_bps = d.status === "lunas" ? true : false;
               } else if (req.query.jenis === "kosmara") {
-                persyaratan.lunas_kosmara = d.status === "Lunas" ? true : false;
+                persyaratan.lunas_kosmara = d.status <= 0 ? true : false;
               }
               await persyaratan.save();
             } else {
