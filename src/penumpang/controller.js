@@ -1189,7 +1189,12 @@ module.exports = {
     workbook.xlsx
       .load(excelBuffer)
       .then(() => {
-        const worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        let worksheet;
+        if (req.query.jenis === "bps") {
+          worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        } else if (req.query.jenis === "kosmara") {
+          worksheet = workbook.getWorksheet("data_invoice"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        }
         const data = [];
 
         // Loop melalui baris 2 ke atas dan ambil kolom B dan E
@@ -1197,10 +1202,18 @@ module.exports = {
           if (rowNumber >= 2) {
             const columnBValue = row.getCell("B").value;
             const columnEValue = row.getCell("E").value;
+            const columnIValue = row.getCell("I").value;
 
-            // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-            if (columnBValue !== null && columnEValue !== null) {
-              data.push({ niup: columnBValue, status: columnEValue });
+            if (req.query.jenis === "bps") {
+              // Pastikan nilai tidak kosong sebelum menambahkannya ke array
+              if (columnBValue !== null && columnEValue !== null) {
+                data.push({ niup: columnBValue, status: columnEValue });
+              }
+            } else if (req.query.jenis === "kosmara") {
+              // Pastikan nilai tidak kosong sebelum menambahkannya ke array
+              if (columnBValue !== null && columnIValue !== null) {
+                data.push({ niup: columnBValue, status: columnIValue });
+              }
             }
           }
         });
@@ -1226,7 +1239,7 @@ module.exports = {
               if (req.query.jenis === "bps") {
                 persyaratan.lunas_bps = d.status === "lunas" ? true : false;
               } else if (req.query.jenis === "kosmara") {
-                persyaratan.lunas_kosmara = d.status === "lunas" ? true : false;
+                persyaratan.lunas_kosmara = d.status === "Lunas" ? true : false;
               }
               await persyaratan.save();
             } else {
@@ -1250,6 +1263,7 @@ module.exports = {
         responseHelper.createdOrUpdated(req, res);
       })
       .catch((err) => {
+        console.log(err);
         responseHelper.serverError(
           req,
           res,
