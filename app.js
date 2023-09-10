@@ -18,6 +18,7 @@ const santriRouter = require("./src/santri/router");
 const penumpangRouter = require("./src/penumpang/router");
 const keuanganRouter = require("./src/keuangan/router");
 const statistikRouter = require("./src/statistik/router");
+const suratJalanRouter = require("./src/surat-jalan/router");
 const userRouter = require("./src/user/router");
 
 const logRouter = require("./src/log/router");
@@ -49,6 +50,7 @@ app.use("/santri", auth, santriRouter);
 app.use("/penumpang", auth, penumpangRouter);
 app.use("/keuangan", auth, keuanganRouter);
 app.use("/statistik", auth, statistikRouter);
+app.use("/surat-jalan", suratJalanRouter);
 app.use("/user", auth, userRouter);
 
 app.use("/log", auth, access.sysadmin, logRouter);

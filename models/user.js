@@ -89,6 +89,14 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: false,
         type: DataTypes.BOOLEAN,
       },
+      username_pedatren: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      password_pedatren: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

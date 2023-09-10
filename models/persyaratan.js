@@ -50,10 +50,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
-      izin_pedatren: {
-        type: DataTypes.BOOLEAN,
+      is_izin: {
+        type: DataTypes.ENUM,
         allowNull: false,
-        defaultValue: false,
+        values: ["Y", "T"],
+        defaultValue: "T",
+      },
+      is_cetak: {
+        type: DataTypes.ENUM,
+        allowNull: false,
+        values: ["Y", "T"],
+        defaultValue: "T",
       },
       createdAt: {
         allowNull: false,

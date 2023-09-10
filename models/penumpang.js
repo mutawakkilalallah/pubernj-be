@@ -92,6 +92,10 @@ module.exports = (sequelize, DataTypes) => {
         values: ["di-asrama", "di-bus", "di-terima"],
         defaultValue: "di-asrama",
       },
+      id_perizinan: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",
