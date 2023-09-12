@@ -25,6 +25,7 @@ const {
 const router = express.Router();
 const access = require("../../middleware/authorization");
 const multer = require("multer");
+const lockdata = require("../../middleware/lockdata");
 // Konfigurasi Multer untuk menyimpan file yang diunggah
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -60,9 +61,14 @@ router.put("/armada/delete", access.admin, deleteArmada);
 router.put("/armada/:id", access.admin, updateArmada);
 
 router.delete("/berkas/:id", access.admin, deleteBerkas);
-router.delete("/:uuid", access.wilayah, deleteRombongan);
+router.delete("/:uuid", access.wilayah, lockdata.lockDropspot, deleteRombongan);
 
-router.put("/dropspot/:id", access.wilayah, updateDropspot);
+router.put(
+  "/dropspot/:id",
+  access.wilayah,
+  lockdata.lockDropspot,
+  updateDropspot
+);
 
 router.put("/pemberangkatan/:id", access.pendamping, updateKeberangkatan);
 

@@ -86,6 +86,9 @@ module.exports = {
   imageWithPedatren: (req, res, data) => {
     res.contentType("image/jpeg").send(Buffer.from(data, "binary"));
   },
+  imageQRCode: (req, res, data) => {
+    res.contentType("image/png").send(Buffer.from(data, "binary"));
+  },
 
   //   response untuk data not found
   notFound: (req, res) => {

@@ -22,6 +22,7 @@ async function prosesIzin(niup, userUuid, token) {
         niup: niup,
       },
     });
+    console.log(santri.nama_lengkap);
     if (!santri) {
       await LogPedatren.create({
         user_uuid: userUuid,
@@ -40,8 +41,8 @@ async function prosesIzin(niup, userUuid, token) {
         id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
         nis_santri: dataSantri[0].nis,
         rombongan: "T",
-        sampai_tanggal: "2023-09-21 17:00:00",
-        sejak_tanggal: "2023-09-11 06:00:00",
+        sampai_tanggal: "2023-09-23 17:00:00",
+        sejak_tanggal: "2023-09-13 06:00:00",
       };
       var userData = jwt_decode(token, { header: true });
       let url;
@@ -59,6 +60,30 @@ async function prosesIzin(niup, userUuid, token) {
           "x-token": token,
         },
       });
+      const respNew = await axios.get(
+        `${API_PEDATREN_URL}/person/${santri.uuid}`,
+        {
+          headers: {
+            "x-token": token,
+          },
+        }
+      );
+      const penumpang = await Penumpang.findOne({
+        where: {
+          santri_uuid: santri.uuid,
+        },
+      });
+      await penumpang.update({
+        id_perizinan: respNew.data.perizinan_santri[0].id,
+      });
+      const persyaratan = await Persyaratan.findOne({
+        where: {
+          penumpang_id: penumpang.id,
+        },
+      });
+      await persyaratan.update({
+        is_izin: "Y",
+      });
     }
     return true;
   } catch (err) {
@@ -68,6 +93,37 @@ async function prosesIzin(niup, userUuid, token) {
         err.response ? err.response.data.message : err.message
       }`,
     });
+    return false;
+  }
+}
+
+async function konfirmasiIzin(idIzin, idPenumpang, token) {
+  console.log(idPenumpang);
+  try {
+    const form = {
+      disetujui: "Y",
+      keterangan: "Berhak Melaksanakan Libur Maulid 1445 H",
+    };
+    const response = await axios.put(
+      `${API_PEDATREN_URL}/perizinan/santri/${idIzin}/persetujuan`,
+      form,
+      {
+        headers: {
+          "x-token": token,
+        },
+      }
+    );
+    const persyaratan = await Persyaratan.findOne({
+      where: {
+        penumpang_id: idPenumpang,
+      },
+    });
+    await persyaratan.update({
+      is_konfirmasi: "Y",
+    });
+    return true;
+  } catch (err) {
+    console.log(err.message);
     return false;
   }
 }
@@ -136,6 +192,70 @@ module.exports = {
     }
   },
 
+  allKonfir: async (req, res) => {
+    try {
+      const search = req.query.cari || "";
+      const page = req.query.page || 1;
+      const limit = parseInt(req.query.limit) || 25;
+      const offset = 0 + (page - 1) * limit;
+
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              [Op.or]: [
+                {
+                  niup: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  nama_lengkap: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+              ...(req.role === "wilayah" && {
+                alias_wilayah: req.wilayah,
+              }),
+              ...(req.query.wilayah && {
+                alias_wilayah: req.query.wilayah,
+              }),
+              ...(req.query.blok && {
+                id_blok: req.query.blok,
+              }),
+            },
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+            where: {
+              lunas_bps: true,
+              lunas_kosmara: true,
+              tuntas_fa: true,
+              bebas_kamtib: true,
+              is_izin: "Y",
+              is_konfirmasi: "T",
+              is_cetak: "T",
+            },
+          },
+        ],
+        limit,
+        offset,
+        order: [["updated_at", "DESC"]],
+      });
+      responseHelper.allData(req, res, page, limit, data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
   allSurat: async (req, res) => {
     try {
       const search = req.query.cari || "";
@@ -185,6 +305,7 @@ module.exports = {
               tuntas_fa: true,
               bebas_kamtib: true,
               is_izin: "Y",
+              is_konfirmasi: "Y",
               ...(req.query.cetak && {
                 is_cetak: req.query.cetak,
               }),
@@ -232,11 +353,14 @@ module.exports = {
             username_pedatren: value.username,
             password_pedatren: value.password,
           });
-          responseHelper.createdOrUpdated(req, res);
+          logger.loggerAdUp(req);
+          res.status(201).json({
+            value,
+            token: response.headers["x-token"],
+          });
         }
       }
     } catch (err) {
-      console.log(err);
       responseHelper.serverError(req, res, err.message);
     }
   },
@@ -278,11 +402,11 @@ module.exports = {
             })
             .json({
               status: "ok",
+              token: response.headers["x-token"],
             });
         }
       }
     } catch (err) {
-      console.log(err);
       responseHelper.serverError(req, res, err.message);
     }
   },
@@ -290,15 +414,65 @@ module.exports = {
   createIzin: async (req, res) => {
     let success = 0;
     let failed = 0;
+    const search = req.query.cari || "";
+    const page = req.query.page || 1;
+    const limit = parseInt(req.query.limit) || 25;
+    const offset = 0 + (page - 1) * limit;
     try {
-      const data = [
-        { niup: 11520107628 },
-        { niup: 21620704075 },
-        { niup: 11520105296 },
-      ];
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              [Op.or]: [
+                {
+                  niup: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  nama_lengkap: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+              ...(req.role === "wilayah" && {
+                alias_wilayah: req.wilayah,
+              }),
+              ...(req.query.wilayah && {
+                alias_wilayah: req.query.wilayah,
+              }),
+              ...(req.query.blok && {
+                id_blok: req.query.blok,
+              }),
+            },
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+            where: {
+              lunas_bps: true,
+              lunas_kosmara: true,
+              tuntas_fa: true,
+              bebas_kamtib: true,
+              is_izin: "T",
+              is_cetak: "T",
+            },
+          },
+        ],
+        limit,
+        offset,
+        order: [["updated_at", "DESC"]],
+      });
+      console.log(data.rows.length);
       const token = req.headers["x-pedatren-token"];
       const result = await Promise.all(
-        data.map((d) => prosesIzin(d.niup, req.uuid, token))
+        data.rows.map((d) => prosesIzin(d.santri.niup, req.uuid, token))
       );
 
       const s = result.filter((r) => r).length;
@@ -311,7 +485,7 @@ module.exports = {
         code: 200,
         message: "Berhasil membuat data perizinan di PEDATREN",
         data: {
-          send: data.length,
+          send: data.count,
           process: result.length,
           success,
           failed,
@@ -322,171 +496,135 @@ module.exports = {
     }
   },
 
-  // cetakPdf: async (req, res) => {
-  //   try {
-  //     const search = req.query.cari || "";
-  //     const page = req.query.page || 1;
-  //     const limit = parseInt(req.query.limit) || 3;
-  //     const offset = 0 + (page - 1) * limit;
+  confirmIzin: async (req, res) => {
+    const search = req.query.cari || "";
+    const page = req.query.page || 1;
+    const limit = parseInt(req.query.limit) || 25;
+    const offset = 0 + (page - 1) * limit;
+    try {
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              [Op.or]: [
+                {
+                  niup: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  nama_lengkap: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+              ...(req.role === "wilayah" && {
+                alias_wilayah: req.wilayah,
+              }),
+              ...(req.query.wilayah && {
+                alias_wilayah: req.query.wilayah,
+              }),
+              ...(req.query.blok && {
+                id_blok: req.query.blok,
+              }),
+            },
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
+            where: {
+              lunas_bps: true,
+              lunas_kosmara: true,
+              tuntas_fa: true,
+              bebas_kamtib: true,
+              is_izin: "Y",
+              is_konfirmasi: "T",
+              is_cetak: "T",
+            },
+          },
+        ],
+        limit,
+        offset,
+        order: [["updated_at", "DESC"]],
+      });
+      const token = req.headers["x-pedatren-token"];
+      await Promise.all(
+        data.rows.map((d) => konfirmasiIzin(d.id_perizinan, d.id, token))
+      );
+      logger.loggerSucces(req, 200);
+      res.status(200).json({
+        code: 200,
+        message: "Berhasil konfirmasi data perizinan di PEDATREN",
+      });
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
 
-  //     const data = await Penumpang.findAndCountAll({
-  //       where: {
-  //         [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-  //       },
-  //       include: [
-  //         {
-  //           model: Santri,
-  //           as: "santri",
-  //           attributes: { exclude: ["raw"] },
-  //           where: {
-  //             [Op.or]: [
-  //               {
-  //                 niup: {
-  //                   [Op.like]: `%${search}%`,
-  //                 },
-  //               },
-  //               {
-  //                 nama_lengkap: {
-  //                   [Op.like]: `%${search}%`,
-  //                 },
-  //               },
-  //             ],
-  //             ...(req.role === "wilayah" && {
-  //               alias_wilayah: req.wilayah,
-  //             }),
-  //             ...(req.query.wilayah && {
-  //               alias_wilayah: req.query.wilayah,
-  //             }),
-  //             ...(req.query.blok && {
-  //               id_blok: req.query.blok,
-  //             }),
-  //           },
-  //         },
-  //         {
-  //           model: Persyaratan,
-  //           as: "persyaratan",
-  //           where: {
-  //             lunas_bps: true,
-  //             lunas_kosmara: true,
-  //             tuntas_fa: true,
-  //             bebas_kamtib: true,
-  //             is_izin: "Y",
-  //             ...(req.query.cetak && {
-  //               is_cetak: req.query.cetak,
-  //             }),
-  //           },
-  //         },
-  //       ],
-  //       limit,
-  //       offset,
-  //       order: [["updated_at", "DESC"]],
-  //     });
+  viewLog: async (req, res) => {
+    try {
+      const logs = await LogPedatren.findAll({
+        where: {
+          user_uuid: req.uuid,
+        },
+        order: [["created_at", "DESC"]],
+      });
+      logger.loggerSucces(req, 200);
+      res.status(200).json(logs);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
 
-  //     const doc = new PDFDocument({ size: [16.5 * 72, 21.5 * 72] });
+  getQrIzin: async (req, res) => {
+    try {
+      const santri = await axios.get(
+        API_PEDATREN_URL + "/person/niup/" + req.params.niup,
+        {
+          headers: {
+            "x-token": req.headers["x-token"],
+          },
+        }
+      );
 
-  //     // Set response header for PDF file
-  //     res.setHeader("Content-Type", "application/pdf");
-  //     res.setHeader("Content-Disposition", "inline; filename=example.pdf");
-  //     // Pipe PDFKit output to response
-  //     doc.pipe(res);
+      // res.json(santri.data);
 
-  //     data.rows.forEach((item, index) => {
-  //       if (index > 0) {
-  //         doc.addPage();
-  //       }
-  //       doc.image("surat-jalan/kop.jpg", {
-  //         fit: [400, 300],
-  //         align: "center",
-  //         valign: "center",
-  //       });
-  //       doc.fontSize(16).text("SURAT IZIN LIBUR MAULID 1445 H", {
-  //         align: "center",
-  //         underline: true,
-  //       });
-  //       doc
-  //         .fontSize(12)
-  //         .text("NOMOR : NJ-B/0000/A.IX/09.2022", { align: "center" });
-  //       doc.moveDown(2);
-  //       doc
-  //         .fontSize(12)
-  //         .text(
-  //           "Yang bertanda tangan dibawah ini, Kepala Pondok Pesantren Nurul Jadid Paiton",
-  //           { align: "left" }
-  //         );
-  //       doc.moveDown(2);
-  //       doc.fontSize(12).text(`Nama        : ${item.santri?.nama_lengkap}`);
-  //       doc.fontSize(12).text(`NIUP         : ${item.santri?.niup}`);
-  //       doc.fontSize(12).text(`Wilayah     : ${item.santri?.wilayah}`);
-  //       doc.fontSize(12).text(`Daerah      : ${item.santri?.blok}`);
-  //       doc.moveDown(2);
-  //       doc
-  //         .fontSize(14)
-  //         .text(
-  //           "Santri putri tanggal 9 Rabiul Awal 1445 H/25 September 2023 M s.d.",
-  //           {
-  //             align: "center",
-  //             underline: true,
-  //           }
-  //         );
-  //       doc.fontSize(14).text("18 Rabiul Awal 1445 H/4 Oktober 2023 M.", {
-  //         align: "center",
-  //       });
-  //       doc
-  //         .fontSize(14)
-  //         .text(
-  //           "Santri putra tanggal 10 Rabiul Awal 1445 H/26 September 2023 M s.d.",
-  //           {
-  //             align: "center",
-  //             underline: true,
-  //           }
-  //         );
-  //       doc.fontSize(14).text("19 Rabiul Awal 1445 H/5 Oktober 2023 M.", {
-  //         align: "center",
-  //       });
-  //       doc.moveDown(2);
-  //       doc
-  //         .fontSize(12)
-  //         .text(
-  //           "Demikian surat izin ini dibuat dengan sebenarnya dan untuk digunakan sebagaimana mestinya.",
-  //           { align: "left" }
-  //         );
-  //       doc.moveDown(2);
-  //       doc.fontSize(12).text("Paiton, 10 Safar 1445 H", { align: "left" });
-  //       doc.fontSize(12).text("27 Agustus 2023 M", { align: "left" });
-  //       doc.moveDown(1);
-  //       doc.fontSize(12).text("Kepala,", { align: "left" });
-  //       doc.moveDown(8);
-  //       doc.fontSize(12).text("KH. ABD. HAMID WAHID, M.Ag.", { align: "left" });
-  //       doc.fontSize(12).text("NIUP. 31820500002", { align: "left" });
-  //       doc.moveDown(2);
-  //       doc.fontSize(10).text("Keterangan:", { align: "left" });
-  //       doc.moveDown(2);
-  //       doc
-  //         .fontSize(10)
-  //         .text(
-  //           "1. Kedatangan Santri dan penyerahan surat izin libur ke KAMTIB Wilayah/Daerah selambat-lambatnya pukul 17.00 WIB (Ba’da Maghrib).",
-  //           { align: "left" }
-  //         );
-  //       doc
-  //         .fontSize(10)
-  //         .text("2. Pusat layanan Pulang Bersama;", { align: "left" });
-  //       doc
-  //         .fontSize(10)
-  //         .text("   a. Informasi Umum : 0888-307-7077", { align: "left" });
-  //       doc
-  //         .fontSize(10)
-  //         .text("   b. Putra : 0896-5479-0122", { align: "left" });
-  //       doc
-  //         .fontSize(10)
-  //         .text("   c. Putri : 0822-3105-8592", { align: "left" });
-  //       doc.moveDown(4);
-  //       doc.fontSize(10).text("Tanggal Cetak", { align: "right" });
-  //       doc.fontSize(10).text("27 Aug 2023 22:32:05 WIB", { align: "right" });
-  //     });
+      const perizinan = await axios.get(
+        API_PEDATREN_URL +
+          "/perizinan/santri/" +
+          santri.data.perizinan_santri[0].id,
+        {
+          headers: {
+            "x-token": req.headers["x-token"],
+          },
+        }
+      );
 
-  //     doc.end();
-  //   } catch (err) {
-  //     responseHelper.serverError(req, res, err.message);
-  //   }
-  // },
+      // res.json(perizinan.data);
+      const response = await axios.get(
+        API_PEDATREN_URL + perizinan.data.qrcode_url,
+        {
+          headers: {
+            "x-token": req.headers["x-token"],
+          },
+          responseType: "arraybuffer",
+        }
+      );
+      logger.loggerSucces(req, 200);
+      responseHelper.imageQRCode(req, res, response.data);
+    } catch (err) {
+      responseHelper.serverError(
+        req,
+        res,
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
+      );
+    }
+  },
 };

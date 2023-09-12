@@ -235,7 +235,6 @@ module.exports = {
                 },
               }
             );
-            console.log(updatedArmada);
             counter++;
             totalCounter++;
           } catch (error) {

@@ -56,6 +56,12 @@ module.exports = (sequelize, DataTypes) => {
         values: ["Y", "T"],
         defaultValue: "T",
       },
+      is_konfirmasi: {
+        type: DataTypes.ENUM,
+        allowNull: false,
+        values: ["Y", "T"],
+        defaultValue: "T",
+      },
       is_cetak: {
         type: DataTypes.ENUM,
         allowNull: false,

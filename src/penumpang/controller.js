@@ -535,18 +535,25 @@ module.exports = {
     workbook.xlsx
       .load(excelBuffer)
       .then(() => {
-        const worksheet = workbook.getWorksheet("Sheet 1"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        const worksheet = workbook.getWorksheet("data_invoice"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
         const data = [];
 
         // Loop melalui baris 6 ke atas dan ambil kolom B dan D
         worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-          if (rowNumber >= 6) {
-            const columnBValue = row.getCell("B").value;
-            const columnGValue = row.getCell("G").value;
-
+          if (rowNumber >= 2) {
+            const columnCValue = row.getCell("C").value;
+            const columnLValue = row.getCell("L").value;
+            const columnJValue = row.getCell("J").value;
             // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-            if (columnBValue !== null && columnGValue !== null) {
-              data.push({ niup: columnBValue, total_bayar: columnGValue });
+            if (
+              columnCValue !== null &&
+              columnLValue !== null &&
+              columnJValue === "Lunas"
+            ) {
+              data.push({
+                niup: columnCValue,
+                total_bayar: columnLValue - 1000,
+              });
             }
           }
         });
@@ -1262,7 +1269,6 @@ module.exports = {
         responseHelper.createdOrUpdated(req, res);
       })
       .catch((err) => {
-        console.log(err);
         responseHelper.serverError(
           req,
           res,
