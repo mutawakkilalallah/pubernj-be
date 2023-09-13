@@ -96,6 +96,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.BIGINT,
       },
+      tagihan_ebekal: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

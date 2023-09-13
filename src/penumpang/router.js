@@ -21,6 +21,9 @@ const {
   deleteBerkas,
   exportPersyaratan,
   importPersyaratan,
+  compareTagihan,
+  allCompare,
+  allNoTagihan,
 } = require("./controller");
 const router = express.Router();
 const access = require("../../middleware/authorization");
@@ -32,6 +35,8 @@ const upload = multer({ storage: storage });
 
 router.get("/", getAll);
 router.get("/persyaratan", getAllPersyaratan);
+router.get("/all-compare", allCompare);
+router.get("/no-tagihan", allNoTagihan);
 
 router.get("/export-excel", exportExcel);
 router.get("/export-persyaratan", exportPersyaratan);
@@ -41,6 +46,12 @@ router.post(
   access.keuangan,
   upload.single("excelFile"),
   importBayar
+);
+router.post(
+  "/compare-tagihan",
+  access.keuangan,
+  upload.single("excelFile"),
+  compareTagihan
 );
 router.post(
   "/import-persyaratan",

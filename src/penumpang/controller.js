@@ -9,6 +9,7 @@ const {
   Periode,
   Persyaratan,
   Berkas,
+  sequelize,
 } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
@@ -620,6 +621,78 @@ module.exports = {
       });
   },
 
+  compareTagihan: async (req, res) => {
+    const excelBuffer = req.file.buffer;
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.xlsx
+      .load(excelBuffer)
+      .then(() => {
+        const worksheet = workbook.getWorksheet("data_invoice"); // Pastikan sesuai dengan nama worksheet yang Anda gunakan
+        const data = [];
+
+        // Loop melalui baris 6 ke atas dan ambil kolom B dan D
+        worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+          if (rowNumber >= 2) {
+            const columnCValue = row.getCell("C").value;
+            const columnIValue = row.getCell("I").value;
+            // Pastikan nilai tidak kosong sebelum menambahkannya ke array
+            if (columnCValue !== null && columnIValue !== null) {
+              data.push({
+                niup: columnCValue,
+                tagihan_ebekal: columnIValue - 1000,
+              });
+            }
+          }
+        });
+        const promises = data.map(async (d) => {
+          try {
+            const penumpang = await Penumpang.findOne({
+              include: [
+                {
+                  model: Santri,
+                  as: "santri",
+                  attributes: { exclude: ["raw"] },
+                  where: {
+                    niup: d.niup,
+                  },
+                },
+              ],
+            });
+
+            if (penumpang) {
+              // // Lakukan update pada data yang diperoleh dari Excel
+              penumpang.tagihan_ebekal = d.tagihan_ebekal;
+              await penumpang.save();
+            } else {
+              return `Data dengan niup ${d.niup} tidak ditemukan.`;
+            }
+          } catch (error) {
+            return `Terjadi kesalahan: ${error.message}`;
+          }
+        });
+
+        Promise.all(promises)
+          .then((results) => {
+            results.forEach((result) => {
+              //
+            });
+          })
+          .catch((error) => {
+            //
+          });
+
+        responseHelper.createdOrUpdated(req, res);
+      })
+      .catch((err) => {
+        responseHelper.serverError(
+          req,
+          res,
+          "Terjadi kesalahan saat membaca file excel"
+        );
+      });
+  },
+
   suratJalan: async (req, res) => {
     try {
       const data = await Penumpang.findOne({
@@ -804,6 +877,142 @@ module.exports = {
               ...(req.query.bebas_kamtib && {
                 bebas_kamtib: req.query.bebas_kamtib,
               }),
+            },
+          },
+        ],
+        limit: limit,
+        offset: offset,
+        order: [["updated_at", "DESC"]],
+      });
+
+      responseHelper.allData(req, res, page, limit, data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  allCompare: async (req, res) => {
+    try {
+      const search = req.query.cari || "";
+      const page = req.query.page || 1;
+      const limit = parseInt(req.query.limit) || 25;
+      const offset = 0 + (page - 1) * limit;
+
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          [Op.and]: [
+            sequelize.literal("penumpang.tagihan_ebekal != dropspot.harga"),
+          ],
+          ...(req.query.pembayaran && {
+            status_bayar: req.query.pembayaran,
+          }),
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              [Op.or]: [
+                {
+                  niup: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  nama_lengkap: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+              ...(req.query.jenis_kelamin && {
+                jenis_kelamin: req.query.jenis_kelamin,
+              }),
+              ...(req.query.blok && {
+                id_blok: req.query.blok,
+              }),
+              ...(req.query.wilayah && {
+                alias_wilayah: req.query.wilayah,
+              }),
+            },
+          },
+          {
+            model: Periode,
+            as: "periode",
+            where: {
+              is_active: true,
+            },
+          },
+          {
+            model: Dropspot,
+            as: "dropspot",
+          },
+        ],
+        limit: limit,
+        offset: offset,
+        order: [["updated_at", "DESC"]],
+      });
+
+      responseHelper.allData(req, res, page, limit, data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  allNoTagihan: async (req, res) => {
+    try {
+      const search = req.query.cari || "";
+      const page = req.query.page || 1;
+      const limit = parseInt(req.query.limit) || 25;
+      const offset = 0 + (page - 1) * limit;
+
+      const data = await Penumpang.findAndCountAll({
+        where: {
+          tagihan_ebekal: null,
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              [Op.or]: [
+                {
+                  niup: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  nama_lengkap: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+              ...(req.query.jenis_kelamin && {
+                jenis_kelamin: req.query.jenis_kelamin,
+              }),
+              ...(req.query.blok && {
+                id_blok: req.query.blok,
+              }),
+              ...(req.query.wilayah && {
+                alias_wilayah: req.query.wilayah,
+              }),
+            },
+          },
+          {
+            model: Periode,
+            as: "periode",
+            where: {
+              is_active: true,
+            },
+          },
+          {
+            model: Dropspot,
+            as: "dropspot",
+            where: {
+              harga: {
+                [Op.not]: 0,
+              },
             },
           },
         ],

@@ -18,7 +18,7 @@ if (config.use_env_variable) {
     pool: {
       max: 10,
       min: 0,
-      acquire: 30000,
+      acquire: 60000,
       idle: 10000,
     },
   });
