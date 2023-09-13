@@ -898,10 +898,69 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 25;
       const offset = 0 + (page - 1) * limit;
 
+      // const data = await Penumpang.findAndCountAll({
+      //   where: {
+      //     [Op.and]: [
+      //       sequelize.literal("penumpang.tagihan_ebekal != dropspot.harga"),
+      //     ],
+      //     ...(req.query.pembayaran && {
+      //       status_bayar: req.query.pembayaran,
+      //     }),
+      //   },
+      //   include: [
+      //     {
+      //       model: Santri,
+      //       as: "santri",
+      //       attributes: { exclude: ["raw"] },
+      //       where: {
+      //         [Op.or]: [
+      //           {
+      //             niup: {
+      //               [Op.like]: `%${search}%`,
+      //             },
+      //           },
+      //           {
+      //             nama_lengkap: {
+      //               [Op.like]: `%${search}%`,
+      //             },
+      //           },
+      //         ],
+      //         ...(req.query.jenis_kelamin && {
+      //           jenis_kelamin: req.query.jenis_kelamin,
+      //         }),
+      //         ...(req.query.blok && {
+      //           id_blok: req.query.blok,
+      //         }),
+      //         ...(req.query.wilayah && {
+      //           alias_wilayah: req.query.wilayah,
+      //         }),
+      //       },
+      //     },
+      //     {
+      //       model: Periode,
+      //       as: "periode",
+      //       where: {
+      //         is_active: true,
+      //       },
+      //     },
+      //     {
+      //       model: Dropspot,
+      //       as: "dropspot",
+      //     },
+      //   ],
+      //   limit: limit,
+      //   offset: offset,
+      //   order: [["updated_at", "DESC"]],
+      // });
+
       const data = await Penumpang.findAndCountAll({
         where: {
           [Op.and]: [
-            sequelize.literal("penumpang.tagihan_ebekal != dropspot.harga"),
+            {
+              tagihan_ebekal: {
+                [Op.ne]: sequelize.col("dropspot.harga"),
+              },
+            },
           ],
           ...(req.query.pembayaran && {
             status_bayar: req.query.pembayaran,
