@@ -97,7 +97,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BIGINT,
       },
       tagihan_ebekal: {
-        allowNull: false,
+        allowNull: true,
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
