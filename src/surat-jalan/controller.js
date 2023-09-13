@@ -41,8 +41,8 @@ async function prosesIzin(niup, userUuid, token) {
         id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
         nis_santri: dataSantri[0].nis,
         rombongan: "T",
-        sampai_tanggal: "2023-09-23 17:00:00",
-        sejak_tanggal: "2023-09-13 06:00:00",
+        sampai_tanggal: "2023-09-24 17:00:00",
+        sejak_tanggal: "2023-09-14 06:00:00",
       };
       var userData = jwt_decode(token, { header: true });
       let url;
