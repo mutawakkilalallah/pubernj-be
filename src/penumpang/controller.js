@@ -968,7 +968,7 @@ module.exports = {
 
       const data = await Penumpang.findAndCountAll({
         where: {
-          tagihan_ebekal: null,
+          tagihan_ebekal: 0,
         },
         include: [
           {
