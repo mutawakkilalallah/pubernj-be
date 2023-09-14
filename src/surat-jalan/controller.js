@@ -22,7 +22,6 @@ async function prosesIzin(niup, userUuid, token) {
         niup: niup,
       },
     });
-    console.log(santri.nama_lengkap);
     if (!santri) {
       await LogPedatren.create({
         user_uuid: userUuid,
@@ -34,16 +33,30 @@ async function prosesIzin(niup, userUuid, token) {
       const dataSantri = santri?.raw?.santri.filter(
         (item) => item.tanggal_akhir === null
       );
-      const form = {
-        bermalam: "Y",
-        id_alasan_izin: 19,
-        id_kabupaten_tujuan: santri?.raw?.id_kabupaten,
-        id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
-        nis_santri: dataSantri[0].nis,
-        rombongan: "T",
-        sampai_tanggal: "2023-09-24 17:00:00",
-        sejak_tanggal: "2023-09-14 06:00:00",
-      };
+      let form = {};
+      if (santri.jenis_kelamin == "L") {
+        form = {
+          bermalam: "Y",
+          id_alasan_izin: 19,
+          id_kabupaten_tujuan: santri?.raw?.id_kabupaten,
+          id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
+          nis_santri: dataSantri[0].nis,
+          rombongan: "T",
+          sampai_tanggal: "2023-09-25 17:00:00",
+          sejak_tanggal: "2023-09-15 06:00:00",
+        };
+      } else if (santri.jenis_kelamin == "P") {
+        form = {
+          bermalam: "Y",
+          id_alasan_izin: 19,
+          id_kabupaten_tujuan: santri?.raw?.id_kabupaten,
+          id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
+          nis_santri: dataSantri[0].nis,
+          rombongan: "T",
+          sampai_tanggal: "2023-09-25 17:00:00",
+          sejak_tanggal: "2023-09-15 06:00:00",
+        };
+      }
       var userData = jwt_decode(token, { header: true });
       let url;
       if (userData.scope[1].startsWith("wilayah-")) {
@@ -98,21 +111,23 @@ async function prosesIzin(niup, userUuid, token) {
 }
 
 async function konfirmasiIzin(idIzin, idPenumpang, token) {
-  console.log(idPenumpang);
   try {
     const form = {
       disetujui: "Y",
       keterangan: "Berhak Melaksanakan Libur Maulid 1445 H",
     };
-    const response = await axios.put(
-      `${API_PEDATREN_URL}/perizinan/santri/${idIzin}/persetujuan`,
-      form,
-      {
-        headers: {
-          "x-token": token,
-        },
-      }
-    );
+    var userData = jwt_decode(token, { header: true });
+    let url;
+    if (userData.scope[1] != "admin") {
+      url = `${API_PEDATREN_URL}/${userData.scope[1]}/perizinan/santri/${idIzin}/persetujuan`;
+    } else {
+      url = `${API_PEDATREN_URL}/perizinan/santri/${idIzin}/persetujuan`;
+    }
+    const response = await axios.put(url, form, {
+      headers: {
+        "x-token": token,
+      },
+    });
     const persyaratan = await Persyaratan.findOne({
       where: {
         penumpang_id: idPenumpang,
@@ -123,7 +138,6 @@ async function konfirmasiIzin(idIzin, idPenumpang, token) {
     });
     return true;
   } catch (err) {
-    console.log(err.message);
     return false;
   }
 }
@@ -160,6 +174,9 @@ module.exports = {
               ],
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
+              }),
+              ...(req.role === "daerah" && {
+                id_blok: req.id_blok,
               }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
@@ -224,6 +241,9 @@ module.exports = {
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
+              ...(req.role === "daerah" && {
+                id_blok: req.id_blok,
+              }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
@@ -287,6 +307,9 @@ module.exports = {
               ],
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
+              }),
+              ...(req.role === "daerah" && {
+                id_blok: req.id_blok,
               }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
@@ -359,6 +382,30 @@ module.exports = {
             token: response.headers["x-token"],
           });
         }
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  hapusPedatren: async (req, res) => {
+    try {
+      const user = await User.findOne({
+        where: {
+          uuid: req.params.uuid,
+        },
+      });
+      if (!user) {
+        responseHelper.notFound(req, res);
+      } else {
+        await user.update({
+          username_pedatren: null,
+          password_pedatren: null,
+        });
+        logger.loggerAdUp(req);
+        res.status(201).json({
+          status: "ok",
+        });
       }
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
@@ -469,7 +516,6 @@ module.exports = {
         offset,
         order: [["updated_at", "DESC"]],
       });
-      console.log(data.rows.length);
       const token = req.headers["x-pedatren-token"];
       const result = await Promise.all(
         data.rows.map((d) => prosesIzin(d.santri.niup, req.uuid, token))
@@ -593,20 +639,23 @@ module.exports = {
         }
       );
 
-      // res.json(santri.data);
+      var userData = jwt_decode(req.headers["x-token"], { header: true });
+      let url;
+      if (userData.scope[1].startsWith("wilayah-")) {
+        url = `${API_PEDATREN_URL}/wilayah/${userData.scope[1].substring(
+          8
+        )}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
+      } else if (userData.scope[1] != "admin") {
+        url = `${API_PEDATREN_URL}/${userData.scope[1]}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
+      } else {
+        url = `${API_PEDATREN_URL}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
+      }
+      const perizinan = await axios.get(url, {
+        headers: {
+          "x-token": req.headers["x-token"],
+        },
+      });
 
-      const perizinan = await axios.get(
-        API_PEDATREN_URL +
-          "/perizinan/santri/" +
-          santri.data.perizinan_santri[0].id,
-        {
-          headers: {
-            "x-token": req.headers["x-token"],
-          },
-        }
-      );
-
-      // res.json(perizinan.data);
       const response = await axios.get(
         API_PEDATREN_URL + perizinan.data.qrcode_url,
         {
@@ -619,12 +668,7 @@ module.exports = {
       logger.loggerSucces(req, 200);
       responseHelper.imageQRCode(req, res, response.data);
     } catch (err) {
-      responseHelper.serverError(
-        req,
-        res,
-        err.message
-        // "Terjadi kesalahan saat koneksi ke PEDATREN"
-      );
+      responseHelper.serverError(req, res, err.message);
     }
   },
 };

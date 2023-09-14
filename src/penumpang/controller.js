@@ -20,6 +20,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const util = require("util");
+const { not } = require("joi");
 
 // storage untuk surat keterangan
 const storageBerkas = multer.diskStorage({
@@ -60,6 +61,9 @@ module.exports = {
               },
             },
           ],
+          ...(req.query.tagihan === "T" && {
+            tagihan_ebekal: 0,
+          }),
           ...(req.query.masuk_bus === "n" && {
             armada_id: {
               [Op.is]: null,
@@ -107,6 +111,13 @@ module.exports = {
           {
             model: Dropspot,
             as: "dropspot",
+            where: {
+              ...(req.query.tagihan === "T" && {
+                harga: {
+                  [Op.not]: 0,
+                },
+              }),
+            },
             include: {
               model: Area,
               as: "area",
@@ -461,7 +472,7 @@ module.exports = {
     // Mengisi data pada baris 6 dan seterusnya (disesuaikan dengan data Anda)
 
     const data = await Penumpang.findAll({
-      attributes: ["id", "santri_uuid", "dropspot_id"],
+      attributes: ["id", "santri_uuid", "dropspot_id", "tagihan_ebekal"],
       where: {
         ...(req.query.blok && {
           "$santri.id_blok$": req.query.blok,
@@ -475,6 +486,9 @@ module.exports = {
         ...(req.query.jenis_kelamin && {
           "$santri.jenis_kelamin$": req.query.jenis_kelamin,
         }),
+        ...(req.query.tagihan === "T" && {
+          tagihan_ebekal: 0,
+        }),
       },
       include: [
         {
@@ -486,6 +500,13 @@ module.exports = {
           model: Dropspot,
           as: "dropspot",
           attributes: ["id", "harga"],
+          where: {
+            ...(req.query.tagihan === "T" && {
+              harga: {
+                [Op.not]: 0,
+              },
+            }),
+          },
         },
       ],
     });
@@ -898,74 +919,32 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 25;
       const offset = 0 + (page - 1) * limit;
 
-      // const data = await Penumpang.findAndCountAll({
-      //   where: {
-      //     [Op.and]: [
-      //       sequelize.literal("penumpang.tagihan_ebekal != dropspot.harga"),
-      //     ],
-      //     ...(req.query.pembayaran && {
-      //       status_bayar: req.query.pembayaran,
-      //     }),
-      //   },
-      //   include: [
-      //     {
-      //       model: Santri,
-      //       as: "santri",
-      //       attributes: { exclude: ["raw"] },
-      //       where: {
-      //         [Op.or]: [
-      //           {
-      //             niup: {
-      //               [Op.like]: `%${search}%`,
-      //             },
-      //           },
-      //           {
-      //             nama_lengkap: {
-      //               [Op.like]: `%${search}%`,
-      //             },
-      //           },
-      //         ],
-      //         ...(req.query.jenis_kelamin && {
-      //           jenis_kelamin: req.query.jenis_kelamin,
-      //         }),
-      //         ...(req.query.blok && {
-      //           id_blok: req.query.blok,
-      //         }),
-      //         ...(req.query.wilayah && {
-      //           alias_wilayah: req.query.wilayah,
-      //         }),
-      //       },
-      //     },
-      //     {
-      //       model: Periode,
-      //       as: "periode",
-      //       where: {
-      //         is_active: true,
-      //       },
-      //     },
-      //     {
-      //       model: Dropspot,
-      //       as: "dropspot",
-      //     },
-      //   ],
-      //   limit: limit,
-      //   offset: offset,
-      //   order: [["updated_at", "DESC"]],
-      // });
+      const where = {
+        tagihan_ebekal: {
+          [Op.ne]: sequelize.col("dropspot.harga"),
+        },
+      };
+
+      const andConditions = [];
+
+      if (req.query.nominal === "Y") {
+        andConditions.push({
+          tagihan_ebekal: {
+            [Op.not]: 0,
+          },
+        });
+      }
+
+      if (req.query.pembayaran) {
+        where.status_bayar = req.query.pembayaran;
+      }
+
+      if (andConditions.length > 0) {
+        where[Op.and] = andConditions;
+      }
 
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.and]: [
-            {
-              tagihan_ebekal: {
-                [Op.ne]: sequelize.col("dropspot.harga"),
-              },
-            },
-          ],
-          ...(req.query.pembayaran && {
-            status_bayar: req.query.pembayaran,
-          }),
-        },
+        where: where,
         include: [
           {
             model: Santri,
@@ -1005,6 +984,13 @@ module.exports = {
           {
             model: Dropspot,
             as: "dropspot",
+            where: {
+              ...(req.query.nominal === "Y" && {
+                harga: {
+                  [Op.not]: 0,
+                },
+              }),
+            },
           },
         ],
         limit: limit,
