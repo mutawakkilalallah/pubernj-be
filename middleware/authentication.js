@@ -12,6 +12,7 @@ module.exports = async (req, res, next) => {
       req.uuid = decoded.uuid;
       req.nama_lengkap = decoded.nama_lengkap;
       req.username = decoded.username;
+      req.jenis_kelamin = decoded.jenis_kelamin;
       req.role = decoded.role;
       req.wilayah = decoded.wilayah;
       req.id_blok = decoded.id_blok;

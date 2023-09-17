@@ -44,6 +44,7 @@ module.exports = {
         { key: "supervisor", value: "supervisor" },
         { key: "armada", value: "armada" },
         { key: "pendamping", value: "pendamping" },
+        { key: "biktren", value: "biktren" },
         { key: "wilayah", value: "wilayah" },
         { key: "daerah", value: "daerah" },
         { key: "p4nj", value: "p4nj" },
@@ -135,6 +136,7 @@ module.exports = {
 
               value.password = await bcrypt.hash(value.password, 10);
               value.nama_lengkap = response.data.nama_lengkap;
+              value.jenis_kelamin = response.data.jenis_kelamin;
               value.type = "internal";
               if (value.role === "daerah") {
                 value.id_blok =

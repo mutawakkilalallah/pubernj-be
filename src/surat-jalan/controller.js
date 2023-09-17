@@ -4,6 +4,7 @@ const {
   Santri,
   Persyaratan,
   User,
+  Dropspot,
   LogPedatren,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
@@ -12,8 +13,8 @@ const axios = require("axios");
 const { API_PEDATREN_URL } = process.env;
 const logger = require("../../helpers/logger");
 const jwt_decode = require("jwt-decode");
-const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const moment = require("moment-timezone");
 
 async function prosesIzin(niup, userUuid, token) {
   try {
@@ -29,6 +30,28 @@ async function prosesIzin(niup, userUuid, token) {
       });
       return false;
     } else {
+      const penumpang = await Penumpang.findOne({
+        where: {
+          santri_uuid: santri.uuid,
+        },
+        include: {
+          model: Dropspot,
+          as: "dropspot",
+        },
+      });
+      let timestamp;
+      if (santri.jenis_kelamin == "L") {
+        timestamp = moment.tz(
+          penumpang.dropspot.jam_berangkat_pa,
+          "Asia/Jakarta"
+        );
+      } else if (santri.jenis_kelamin == "P") {
+        timestamp = moment.tz(
+          penumpang.dropspot.jam_berangkat_pi,
+          "Asia/Jakarta"
+        );
+      }
+      const sejak_tanggal = timestamp.format("YYYY-MM-DD HH:mm:ss");
       santri.raw = JSON.parse(santri?.raw);
       const dataSantri = santri?.raw?.santri.filter(
         (item) => item.tanggal_akhir === null
@@ -42,8 +65,10 @@ async function prosesIzin(niup, userUuid, token) {
           id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
-          sampai_tanggal: "2023-09-25 17:00:00",
-          sejak_tanggal: "2023-09-15 06:00:00",
+          // sampai_tanggal: "2023-10-05 17:00:00",
+          sampai_tanggal: "2023-09-27 17:00:00",
+          sejak_tanggal: "2023-09-17 06:00:00",
+          // sejak_tanggal,
         };
       } else if (santri.jenis_kelamin == "P") {
         form = {
@@ -53,8 +78,10 @@ async function prosesIzin(niup, userUuid, token) {
           id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
-          sampai_tanggal: "2023-09-25 17:00:00",
-          sejak_tanggal: "2023-09-15 06:00:00",
+          // sampai_tanggal: "2023-10-04 17:00:00",
+          sampai_tanggal: "2023-09-27 17:00:00",
+          sejak_tanggal: "2023-09-17 06:00:00",
+          // sejak_tanggal,
         };
       }
       var userData = jwt_decode(token, { header: true });
@@ -81,11 +108,6 @@ async function prosesIzin(niup, userUuid, token) {
           },
         }
       );
-      const penumpang = await Penumpang.findOne({
-        where: {
-          santri_uuid: santri.uuid,
-        },
-      });
       await penumpang.update({
         id_perizinan: respNew.data.perizinan_santri[0].id,
       });
@@ -238,11 +260,8 @@ module.exports = {
                   },
                 },
               ],
-              ...(req.role === "wilayah" && {
-                alias_wilayah: req.wilayah,
-              }),
-              ...(req.role === "daerah" && {
-                id_blok: req.id_blok,
+              ...(req.role === "biktren" && {
+                jenis_kelamin: req.jenis_kelamin,
               }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
@@ -491,6 +510,9 @@ module.exports = {
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
+              ...(req.role === "daerah" && {
+                id_blok: req.id_blok,
+              }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
@@ -570,8 +592,8 @@ module.exports = {
                   },
                 },
               ],
-              ...(req.role === "wilayah" && {
-                alias_wilayah: req.wilayah,
+              ...(req.role === "biktren" && {
+                jenis_kelamin: req.jenis_kelamin,
               }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,

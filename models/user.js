@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.BIGINT,
       },
+      jenis_kelamin: {
+        allowNull: true,
+        values: ["L", "P"],
+        type: DataTypes.ENUM,
+      },
       id_blok: {
         allowNull: true,
         type: DataTypes.INTEGER,
@@ -66,6 +71,7 @@ module.exports = (sequelize, DataTypes) => {
           "admin",
           "keuangan",
           "bps",
+          "biktren",
           "armada",
           "p4nj",
           "supervisor",

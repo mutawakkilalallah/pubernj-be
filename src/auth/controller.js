@@ -36,6 +36,7 @@ module.exports = {
                 uuid: data.uuid,
                 nama_lengkap: data.nama_lengkap,
                 username: data.username,
+                jenis_kelamin: data.jenis_kelamin,
                 role: data.role,
                 wilayah: data.alias_wilayah ? data.alias_wilayah : null,
                 id_blok: data.id_blok ? data.id_blok : null,

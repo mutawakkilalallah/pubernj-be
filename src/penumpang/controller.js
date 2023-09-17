@@ -117,6 +117,14 @@ module.exports = {
                   [Op.not]: 0,
                 },
               }),
+              ...(req.query.nominal === "Y" && {
+                harga: 0,
+              }),
+              ...(req.query.nominal === "T" && {
+                harga: {
+                  [Op.not]: 0,
+                },
+              }),
             },
             include: {
               model: Area,
@@ -1451,7 +1459,11 @@ module.exports = {
       .load(excelBuffer)
       .then(() => {
         let worksheet;
-        worksheet = workbook.getWorksheet("Sheet 1");
+        if (req.query.jenis === "bps") {
+          worksheet = workbook.getWorksheet("data_bps_puber");
+        } else if (req.query.jenis === "kosmara") {
+          worksheet = workbook.getWorksheet("Sheet 1");
+        }
         const data = [];
 
         // Loop melalui baris 2 ke atas dan ambil kolom B dan E
