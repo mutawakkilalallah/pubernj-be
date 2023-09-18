@@ -4,6 +4,7 @@ const {
   Dropspot,
   Santri,
   Armada,
+  Persyaratan,
   User,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
@@ -35,6 +36,10 @@ module.exports = {
           {
             model: Santri,
             as: "santri",
+          },
+          {
+            model: Persyaratan,
+            as: "persyaratan",
           },
         ],
       });
