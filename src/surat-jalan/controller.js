@@ -66,8 +66,8 @@ async function prosesIzin(niup, userUuid, token) {
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
           // sampai_tanggal: "2023-10-05 17:00:00",
-          sampai_tanggal: "2023-09-27 17:00:00",
-          sejak_tanggal: "2023-09-17 06:00:00",
+          sampai_tanggal: "2023-09-29 17:00:00",
+          sejak_tanggal: "2023-09-19 06:00:00",
           // sejak_tanggal,
         };
       } else if (santri.jenis_kelamin == "P") {
@@ -79,8 +79,8 @@ async function prosesIzin(niup, userUuid, token) {
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
           // sampai_tanggal: "2023-10-04 17:00:00",
-          sampai_tanggal: "2023-09-27 17:00:00",
-          sejak_tanggal: "2023-09-17 06:00:00",
+          sampai_tanggal: "2023-09-29 17:00:00",
+          sejak_tanggal: "2023-09-19 06:00:00",
           // sejak_tanggal,
         };
       }
