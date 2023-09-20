@@ -8,6 +8,8 @@ const {
   User,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   getByNiup: async (req, res) => {
@@ -57,6 +59,22 @@ module.exports = {
         data.santri.raw = JSON.parse(data.santri.raw);
         responseHelper.oneData(req, res, data);
       }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  getImageSurat: async (req, res) => {
+    const fileName = `berkas/${req.params.image}`;
+    try {
+      const fileExtension = path.extname(fileName);
+      const filePath = path.resolve(__dirname, "../..", fileName);
+      const fileBuffer = fs.readFileSync(filePath);
+
+      res.writeHead(200, {
+        "Content-Type": `image/${fileExtension.substr(1)}`,
+      });
+      res.end(fileBuffer);
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }
