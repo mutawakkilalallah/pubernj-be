@@ -212,7 +212,7 @@ module.exports = {
             model: Persyaratan,
             as: "persyaratan",
             where: {
-              // lunas_bps: true,
+              lunas_bps: true,
               lunas_kosmara: true,
               tuntas_fa: true,
               bebas_kamtib: true,
