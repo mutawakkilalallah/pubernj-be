@@ -26,4 +26,9 @@ module.exports = {
       "any.required": "type persyaratan harus diisi",
     }),
   }),
+  addMahrom: Joi.object({
+    mahrom_id: Joi.required().messages({
+      "any.required": "id mahrom harus diisi",
+    }),
+  }),
 };

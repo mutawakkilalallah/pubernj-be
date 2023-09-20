@@ -101,6 +101,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      mahrom_id: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

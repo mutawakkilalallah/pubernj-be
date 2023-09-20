@@ -65,10 +65,10 @@ async function prosesIzin(niup, userUuid, token) {
           id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
-          // sampai_tanggal: "2023-10-05 17:00:00",
-          sampai_tanggal: "2023-09-29 17:00:00",
-          sejak_tanggal: "2023-09-19 06:00:00",
-          // sejak_tanggal,
+          sampai_tanggal: "2023-10-05 17:00:00",
+          // sampai_tanggal: "2023-09-30 17:00:00",
+          // sejak_tanggal: "2023-09-20 06:00:00",
+          sejak_tanggal,
         };
       } else if (santri.jenis_kelamin == "P") {
         form = {
@@ -78,10 +78,10 @@ async function prosesIzin(niup, userUuid, token) {
           id_kecamatan_tujuan: santri?.raw?.id_kecamatan,
           nis_santri: dataSantri[0].nis,
           rombongan: "T",
-          // sampai_tanggal: "2023-10-04 17:00:00",
-          sampai_tanggal: "2023-09-29 17:00:00",
-          sejak_tanggal: "2023-09-19 06:00:00",
-          // sejak_tanggal,
+          sampai_tanggal: "2023-10-04 17:00:00",
+          // sampai_tanggal: "2023-09-30 17:00:00",
+          // sejak_tanggal: "2023-09-20 06:00:00",
+          sejak_tanggal,
         };
       }
       var userData = jwt_decode(token, { header: true });
@@ -689,6 +689,24 @@ module.exports = {
       );
       logger.loggerSucces(req, 200);
       responseHelper.imageQRCode(req, res, response.data);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  updateStatusCetak: async (req, res) => {
+    try {
+      await Persyaratan.update(
+        {
+          is_cetak: req.body.status,
+        },
+        {
+          where: {
+            id: req.body.id_persyaratan,
+          },
+        }
+      );
+      responseHelper.createdOrUpdated(req, res);
     } catch (err) {
       responseHelper.serverError(req, res, err.message);
     }

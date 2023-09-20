@@ -18,8 +18,8 @@ module.exports = {
       elf_putri,
       hiace_putri,
       mpv_putri,
-      COALESCE(SUM(CASE WHEN s.jenis_kelamin = 'L' THEN 1 ELSE 0 END), 0) AS total_putra,
-      COALESCE(SUM(CASE WHEN s.jenis_kelamin = 'P' THEN 1 ELSE 0 END), 0) AS total_putri,
+      COALESCE(SUM(CASE WHEN s.jenis_kelamin = 'L' AND p.mahrom_id IS NULL THEN 1 ELSE 0 END), 0) AS total_putra,
+      COALESCE(SUM(CASE WHEN s.jenis_kelamin = 'P' OR s.jenis_kelamin = 'L' AND p.mahrom_id IS NOT NULL  THEN 1 ELSE 0 END), 0) AS total_putri,
       COALESCE(SUM(CASE WHEN s.jenis_kelamin = 'L' OR s.jenis_kelamin = 'P' THEN 1 ELSE 0 END), 0) AS total_penumpang
   FROM
       dropspot ds

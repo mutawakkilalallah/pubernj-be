@@ -10,6 +10,7 @@ const {
   allKonfir,
   confirmIzin,
   hapusPedatren,
+  updateStatusCetak,
   //   cetakPdf,
 } = require("./controller");
 const router = express.Router();
@@ -29,5 +30,6 @@ router.post("/create-izin", createIzin);
 router.put("/tautkan-pedatren/:uuid", tautkanPedatren);
 router.put("/hapus-pedatren/:uuid", hapusPedatren);
 router.put("/konfirmasi-izin", confirmIzin);
+router.put("/status-cetak", updateStatusCetak);
 
 module.exports = router;

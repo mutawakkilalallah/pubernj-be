@@ -20,7 +20,6 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const util = require("util");
-const { not } = require("joi");
 
 // storage untuk surat keterangan
 const storageBerkas = multer.diskStorage({
@@ -183,7 +182,7 @@ module.exports = {
 
   getByUuid: async (req, res) => {
     try {
-      const data = await Penumpang.findOne({
+      var data = await Penumpang.findOne({
         where: {
           santri_uuid: req.params.uuid,
         },
@@ -230,6 +229,17 @@ module.exports = {
           }
         }
         data.santri.raw = JSON.parse(data.santri.raw);
+        const mahrom = await Penumpang.findOne({
+          where: {
+            id: data.mahrom_id,
+          },
+          include: {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+          },
+        });
+        data.setDataValue("mahrom", mahrom);
         responseHelper.oneData(req, res, data);
       }
     } catch (err) {
@@ -1541,5 +1551,102 @@ module.exports = {
           "Terjadi kesalahan saat membaca file excel"
         );
       });
+  },
+
+  listMahrom: async (req, res) => {
+    try {
+      const data = await Penumpang.findOne({
+        where: {
+          santri_uuid: req.params.uuid,
+        },
+        include: [
+          {
+            model: Santri,
+            as: "santri",
+          },
+        ],
+      });
+      if (!data) {
+        responseHelper.notFound(req, res);
+      } else {
+        data.santri.raw = JSON.parse(data.santri.raw);
+        const mahrom = [];
+        data.santri.raw.keluarga.map((item) =>
+          mahrom.push(item.uuid_person_lawan)
+        );
+        const listMahrom = await Penumpang.findAll({
+          include: {
+            model: Santri,
+            as: "santri",
+            attributes: { exclude: ["raw"] },
+            where: {
+              uuid: mahrom,
+            },
+          },
+        });
+        logger.loggerSucces(req, 200);
+        res.json({
+          code: 200,
+          message: "Berhasil mendapatkan semua data",
+          data: listMahrom,
+        });
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  addMahrom: async (req, res) => {
+    try {
+      const { error, value } = penumpangValidation.addMahrom.validate(req.body);
+
+      if (error) {
+        responseHelper.badRequest(req, res, error.message);
+      } else {
+        const penumpang = await Penumpang.findOne({
+          where: {
+            id: req.params.id,
+          },
+        });
+        const mahrom = await Penumpang.findOne({
+          where: {
+            id: value.mahrom_id,
+          },
+        });
+
+        if (penumpang.dropspot_id != mahrom.dropspot_id) {
+          responseHelper.badRequest(
+            req,
+            res,
+            "antara santri dan mahromnya harus dalam satu dropspot"
+          );
+        } else {
+          await penumpang.update({
+            mahrom_id: value.mahrom_id,
+          });
+          responseHelper.createdOrUpdated(req, res);
+        }
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
+  deleteMahrom: async (req, res) => {
+    try {
+      await Penumpang.update(
+        {
+          mahrom_id: null,
+        },
+        {
+          where: {
+            id: req.params.id,
+          },
+        }
+      );
+      responseHelper.deleted(req, res);
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
   },
 };
