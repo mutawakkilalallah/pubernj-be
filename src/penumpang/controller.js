@@ -1408,33 +1408,33 @@ module.exports = {
 
     // Menambahkan header sesuai dengan parameter
     const header = [];
-    header.push({ header: "No", key: "no" });
-    header.push({ header: "NIUP", key: "niup" });
-    header.push({ header: "Nama", key: "nama" });
-    header.push({ header: "Jenis Kelamin", key: "jk" });
-    header.push({ header: "Status Pembayaran", key: "status" });
+    if (req.query.jenis === "bps") {
+      header.push({ header: "NIUP", key: "niup" });
+      header.push({ header: "Status", key: "status" });
+    }
+
+    if (req.query.jenis === "kosmara") {
+      header.push({ header: "No", key: "no" });
+      header.push({ header: "NIUP", key: "niup" });
+      header.push({ header: "Nama", key: "nama" });
+      header.push({ header: "Jenis Kelamin", key: "jk" });
+      header.push({ header: "Status Pembayaran", key: "status" });
+    }
 
     worksheet.columns = header;
 
     data.forEach((d, index) => {
-      const row = {
-        no: index + 1,
-        niup: d?.santri?.niup,
-        nama: d?.santri?.nama_lengkap,
-        jk: d?.santri?.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan",
-      };
-
-      if (req.query.jenis === "bps") {
-        row["status"] =
-          d?.persyaratan?.lunas_bps === true ? "lunas" : "belum lunas";
-      }
-
       if (req.query.jenis === "kosmara") {
-        row["status"] =
-          d?.persyaratan?.lunas_kosmara === true ? "lunas" : "belum lunas";
+        const row = {
+          no: index + 1,
+          niup: d?.santri?.niup,
+          nama: d?.santri?.nama_lengkap,
+          jk: d?.santri?.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan",
+          status:
+            d?.persyaratan?.lunas_kosmara === true ? "lunas" : "belum lunas",
+        };
+        worksheet.addRow(row);
       }
-
-      worksheet.addRow(row);
     });
 
     // Simpan file Excel ke dalam buffer
@@ -1470,7 +1470,7 @@ module.exports = {
       .then(() => {
         let worksheet;
         if (req.query.jenis === "bps") {
-          worksheet = workbook.getWorksheet("data_bps_puber");
+          worksheet = workbook.getWorksheet("Sheet 1");
         } else if (req.query.jenis === "kosmara") {
           worksheet = workbook.getWorksheet("Sheet 1");
         }
@@ -1483,13 +1483,13 @@ module.exports = {
             const columnAValue = row.getCell("A").value;
             const columnCValue = row.getCell("C").value;
             // baca excel BPS
-            const columnBValue = row.getCell("B").value;
-            const columnEValue = row.getCell("E").value;
+            const columnA2Value = row.getCell("A").value;
+            const columnB2Value = row.getCell("B").value;
 
             if (req.query.jenis === "bps") {
               // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-              if (columnBValue !== null && columnEValue !== null) {
-                data.push({ niup: columnBValue, status: columnEValue });
+              if (columnA2Value !== null && columnB2Value !== null) {
+                data.push({ niup: columnA2Value, status: columnB2Value });
               }
             } else if (req.query.jenis === "kosmara") {
               // Pastikan nilai tidak kosong sebelum menambahkannya ke array
@@ -1519,7 +1519,10 @@ module.exports = {
             });
             if (persyaratan) {
               if (req.query.jenis === "bps") {
-                persyaratan.lunas_bps = d.status === "lunas" ? true : false;
+                persyaratan.lunas_bps =
+                  d.status != "belum-tuntas" ? true : false;
+                persyaratan.is_dispen_bps =
+                  d.status != "dispensasi" ? "T" : "Y";
               } else if (req.query.jenis === "kosmara") {
                 persyaratan.lunas_kosmara = d.status <= 0 ? true : false;
               }

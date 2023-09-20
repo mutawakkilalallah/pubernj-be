@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes) => {
         values: ["Y", "T"],
         defaultValue: "T",
       },
+      is_dispen_bps: {
+        type: DataTypes.ENUM,
+        allowNull: true,
+        values: ["Y", "T"],
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",
