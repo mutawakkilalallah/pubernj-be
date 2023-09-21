@@ -7,6 +7,7 @@ const port = process.env.PORT;
 
 const auth = require("./middleware/authentication");
 const access = require("./middleware/authorization");
+const lock = require("./middleware/lockdata");
 
 const authRouter = require("./src/auth/router");
 
@@ -50,7 +51,7 @@ app.use("/santri", auth, santriRouter);
 app.use("/penumpang", auth, penumpangRouter);
 app.use("/keuangan", auth, keuanganRouter);
 app.use("/statistik", auth, statistikRouter);
-app.use("/surat-jalan", auth, suratJalanRouter);
+app.use("/surat-jalan", auth, lock.closeAccess, suratJalanRouter);
 app.use("/user", auth, userRouter);
 
 app.use("/log", auth, access.sysadmin, logRouter);

@@ -17,4 +17,15 @@ module.exports = {
       next();
     }
   },
+  closeAccess: async (req, res, next) => {
+    if (req.role != "sysadmin") {
+      responseHelper.badRequest(
+        req,
+        res,
+        "Ops !.., akses cetak surat untuk sementara di tutup"
+      );
+    } else {
+      next();
+    }
+  },
 };
