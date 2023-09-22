@@ -199,6 +199,10 @@ module.exports = {
               ...(req.role != "sysadmin" && {
                 jenis_kelamin: "P",
               }),
+              ...(req.role === "admin" && {
+                jenis_kelamin: "X",
+              }),
+              // ----------------------------------------------------
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
@@ -284,9 +288,14 @@ module.exports = {
               ...(req.role != "sysadmin" && {
                 jenis_kelamin: "P",
               }),
-              // ...(req.role === "biktren" && {
-              //   jenis_kelamin: req.jenis_kelamin,
-              // }),
+              ...(req.role === "biktren" && {
+                // jenis_kelamin: req.jenis_kelamin,
+                jenis_kelamin: "P",
+              }),
+              ...(req.role === "admin" && {
+                jenis_kelamin: "X",
+              }),
+              // ----------------------------------------------------
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
@@ -360,6 +369,10 @@ module.exports = {
               ...(req.role != "sysadmin" && {
                 jenis_kelamin: "P",
               }),
+              ...(req.role === "admin" && {
+                jenis_kelamin: "X",
+              }),
+              // ----------------------------------------------------
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
@@ -559,6 +572,10 @@ module.exports = {
               ...(req.role != "sysadmin" && {
                 jenis_kelamin: "P",
               }),
+              ...(req.role === "admin" && {
+                jenis_kelamin: "X",
+              }),
+              // ----------------------------------------------------
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
@@ -656,9 +673,14 @@ module.exports = {
               ...(req.role != "sysadmin" && {
                 jenis_kelamin: "P",
               }),
-              // ...(req.role === "biktren" && {
-              //     jenis_kelamin: req.jenis_kelamin,
-              //   }),
+              ...(req.role === "biktren" && {
+                // jenis_kelamin: req.jenis_kelamin,
+                jenis_kelamin: "P",
+              }),
+              ...(req.role === "admin" && {
+                jenis_kelamin: "X",
+              }),
+              // ----------------------------------------------------
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
