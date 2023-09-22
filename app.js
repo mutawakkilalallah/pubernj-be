@@ -51,7 +51,7 @@ app.use("/santri", auth, santriRouter);
 app.use("/penumpang", auth, penumpangRouter);
 app.use("/keuangan", auth, keuanganRouter);
 app.use("/statistik", auth, statistikRouter);
-app.use("/surat-jalan", auth, lock.closeAccess, suratJalanRouter);
+app.use("/surat-jalan", auth, suratJalanRouter);
 app.use("/user", auth, userRouter);
 
 app.use("/log", auth, access.sysadmin, logRouter);
