@@ -729,6 +729,36 @@ module.exports = {
     }
   },
 
+  keluarPos: async (req, res) => {
+    try {
+      const form = {
+        diketahui: "Y",
+      };
+      const penumpang = await Penumpang.findOne({
+        where: {
+          id: req.params.id,
+        },
+      });
+      if (!penumpang) {
+        responseHelper.notFound(req, res);
+      } else {
+        const user = await User.findOne({ where: { username: req.username } });
+        const url = `${API_PEDATREN_URL}/penjagapos/perizinan/santri/${penumpang?.id_perizinan}/pemberitahuan`;
+        const response = await axios.put(url, form, {
+          headers: {
+            "x-token": user.token_pedatren,
+          },
+        });
+        await penumpang.update({
+          status_keberangkatan: "di-bus",
+        });
+        responseHelper.createdOrUpdated(req, res);
+      }
+    } catch (err) {
+      responseHelper.serverError(req, res, err.message);
+    }
+  },
+
   viewLog: async (req, res) => {
     try {
       const logs = await LogPedatren.findAll({

@@ -31,6 +31,25 @@ module.exports = {
           if (!validPassword) {
             responseHelper.unauthorized(req, res);
           } else {
+            var pedatrenToken = "";
+            if (data.role === "pendamping") {
+              const pass = `${data.username}321`;
+              const authString = `${data.username}:${pass}`;
+              const base64Auth = Buffer.from(authString).toString("base64");
+              const config = {
+                headers: {
+                  Authorization: `Basic ${base64Auth}`,
+                },
+              };
+              const response = await axios.get(
+                `${API_PEDATREN_URL}/auth/login`,
+                config
+              );
+              await data.update({
+                token_pedatren: response.headers["x-token"],
+              });
+              pedatrenToken = response.headers["x-token"];
+            }
             const token = await jwt.sign(
               {
                 uuid: data.uuid,
@@ -41,6 +60,7 @@ module.exports = {
                 wilayah: data.alias_wilayah ? data.alias_wilayah : null,
                 id_blok: data.id_blok ? data.id_blok : null,
                 area: data.area_id ? data.area_id : null,
+                pedatrenToken,
               },
               JWT_SECRET_KEY,
               {

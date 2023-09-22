@@ -17,6 +17,7 @@ module.exports = async (req, res, next) => {
       req.wilayah = decoded.wilayah;
       req.id_blok = decoded.id_blok;
       req.area = decoded.area;
+      req.pedatrenToken = decoded.pedatrenToken;
       next();
     }
   });

@@ -103,6 +103,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.STRING,
       },
+      token_pedatren: {
+        allowNull: true,
+        type: DataTypes.TEXT,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",

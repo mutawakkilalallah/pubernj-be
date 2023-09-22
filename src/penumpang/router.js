@@ -35,6 +35,7 @@ const lockdata = require("../../middleware/lockdata");
 // Konfigurasi Multer untuk menyimpan file yang diunggah
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const { keluarPos } = require("../surat-jalan/controller");
 
 router.get("/", getAll);
 router.get("/persyaratan", getAllPersyaratan);
@@ -86,7 +87,7 @@ router.put(
   updateDropspot
 );
 
-router.put("/pemberangkatan/:id", access.pendamping, updateKeberangkatan);
+router.put("/pemberangkatan/:id", access.pendamping, keluarPos);
 
 router.put("/pembayaran/:id", access.keuangan, updatePembayaran);
 
