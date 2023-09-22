@@ -176,10 +176,6 @@ module.exports = {
       const data = await Penumpang.findAndCountAll({
         where: {
           [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-          // jika admin hanya boleh pengurus putra **SEMENTARA**
-          ...(req.role === "admin" && {
-            dropspot_id: 106,
-          }),
         },
         include: [
           {
@@ -199,14 +195,15 @@ module.exports = {
                   },
                 },
               ],
-              // jika daerah atau wilayah hanya boleh perempuan **SEMENTARA**
+              // hanya boleh perempuan kecuali sysadmin **SEMENTARA**
+              ...(req.role != "sysadmin" && {
+                jenis_kelamin: "P",
+              }),
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
-                jenis_kelamin: "P",
               }),
               ...(req.role === "daerah" && {
                 id_blok: req.id_blok,
-                jenis_kelamin: "P",
               }),
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
@@ -282,12 +279,14 @@ module.exports = {
                   },
                 },
               ],
-              ...(req.role === "biktren" ||
-                (req.role === "admin" && {
-                  // jika biktren hanya boleh putra **SEMENTARA**
-                  // jenis_kelamin: req.jenis_kelamin,
-                  jenis_kelamin: "L",
-                })),
+
+              // hanya boleh perempuan kecuali sysadmin **SEMENTARA**
+              ...(req.role != "sysadmin" && {
+                jenis_kelamin: "P",
+              }),
+              // ...(req.role === "biktren" && {
+              //   jenis_kelamin: req.jenis_kelamin,
+              // }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
@@ -357,6 +356,10 @@ module.exports = {
                   },
                 },
               ],
+              // hanya boleh perempuan kecuali sysadmin **SEMENTARA**
+              ...(req.role != "sysadmin" && {
+                jenis_kelamin: "P",
+              }),
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
@@ -552,14 +555,15 @@ module.exports = {
                   },
                 },
               ],
-              // jika daerah atau wilayah hanya boleh perempuan **SEMENTARA**
+              // hanya boleh perempuan kecuali sysadmin **SEMENTARA**
+              ...(req.role != "sysadmin" && {
+                jenis_kelamin: "P",
+              }),
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
-                jenis_kelamin: "P",
               }),
               ...(req.role === "daerah" && {
                 id_blok: req.id_blok,
-                jenis_kelamin: "P",
               }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
@@ -648,12 +652,13 @@ module.exports = {
                   },
                 },
               ],
-              ...(req.role === "biktren" ||
-                (req.role === "admin" && {
-                  // jika biktren hanya boleh putra **SEMENTARA**
-                  // jenis_kelamin: req.jenis_kelamin,
-                  jenis_kelamin: "L",
-                })),
+              // hanya boleh perempuan kecuali sysadmin **SEMENTARA**
+              ...(req.role != "sysadmin" && {
+                jenis_kelamin: "P",
+              }),
+              // ...(req.role === "biktren" && {
+              //     jenis_kelamin: req.jenis_kelamin,
+              //   }),
               ...(req.query.wilayah && {
                 alias_wilayah: req.query.wilayah,
               }),
