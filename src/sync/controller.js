@@ -73,7 +73,6 @@ async function processDataDomisiliSantri(uuid) {
       where: {
         uuid: uuid,
       },
-      attributes: { exclude: ["raw"] },
     });
     if (
       response?.data?.domisili_santri[
