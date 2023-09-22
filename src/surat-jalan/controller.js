@@ -5,6 +5,7 @@ const {
   Persyaratan,
   User,
   Dropspot,
+  Area,
   LogPedatren,
 } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
@@ -220,6 +221,14 @@ module.exports = {
               is_cetak: "T",
             },
           },
+          {
+            model: Dropspot,
+            as: "dropspot",
+            where: {
+              ...(req.query.area && { area_id: req.query.area }),
+              ...(req.query.dropspot && { id: req.query.dropspot }),
+            },
+          },
         ],
         limit,
         offset,
@@ -282,6 +291,14 @@ module.exports = {
               is_izin: "Y",
               is_konfirmasi: "T",
               is_cetak: "T",
+            },
+          },
+          {
+            model: Dropspot,
+            as: "dropspot",
+            where: {
+              ...(req.query.area && { area_id: req.query.area }),
+              ...(req.query.dropspot && { id: req.query.dropspot }),
             },
           },
         ],
@@ -351,6 +368,14 @@ module.exports = {
               ...(req.query.cetak && {
                 is_cetak: req.query.cetak,
               }),
+            },
+          },
+          {
+            model: Dropspot,
+            as: "dropspot",
+            where: {
+              ...(req.query.area && { area_id: req.query.area }),
+              ...(req.query.dropspot && { id: req.query.dropspot }),
             },
           },
         ],
