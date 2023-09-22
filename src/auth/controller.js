@@ -32,7 +32,7 @@ module.exports = {
             responseHelper.unauthorized(req, res);
           } else {
             var pedatrenToken = "";
-            if (data.role === "pendamping") {
+            if (data.role === "sysadmin") {
               const pass = `${data.username}321`;
               const authString = `${data.username}:${pass}`;
               const base64Auth = Buffer.from(authString).toString("base64");
