@@ -18,6 +18,7 @@ const {
   // updatePenumpang,
   updateUser,
   updateDomisiliSantri,
+  updateRawSantri,
 } = require("./controller");
 const router = express.Router();
 
@@ -40,5 +41,6 @@ router.put("/update/user", updateUser);
 router.post("/generate/santri", generateSantri);
 router.put("/update/santri", updateSantri);
 router.put("/update/santri/domisili", updateDomisiliSantri);
+router.put("/update/santri/raw", updateRawSantri);
 
 module.exports = router;

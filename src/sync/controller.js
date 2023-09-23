@@ -123,6 +123,28 @@ async function processDataDomisiliSantri(uuid) {
   }
 }
 
+async function processDataRawSantri(uuid) {
+  try {
+    const response = await axios.get(API_PEDATREN_URL + "/person/" + uuid, {
+      headers: {
+        "x-api-key": API_PEDATREN_TOKEN,
+      },
+    });
+    const santri = await Santri.findOne({
+      where: {
+        uuid: uuid,
+      },
+    });
+    await santri.update({
+      raw: JSON.stringify(response?.data),
+    });
+    return true;
+  } catch (err) {
+    console.log(uuid + " : " + err.message);
+    return false;
+  }
+}
+
 async function processDataPenumpangKec(uuid) {
   try {
     const penumpang = await Penumpang.findOne({
@@ -1594,59 +1616,55 @@ module.exports = {
     }
   },
 
-  // updatePenumpang: async (req, res) => {
-  //   // let totalBerhasilTambah = 0;
-  //   // let totalGagalTambah = 0;
-  //   // let totalBerhasilDestroy = 0;
-  //   // let totalGagalDestroy = 0;
-  //   try {
-  //     const dataPenumpang = await Penumpang.findAll({
-  //       attributes: ["santri_uuid"],
-  //     });
-  //     const dataSantri = await Santri.findAll({
-  //       attributes: ["uuid"],
-  //     });
+  updateRawSantri: async (req, res) => {
+    let totalBerhasilUpdate = 0;
+    let totalGagalUpdate = 0;
+    try {
+      const batchSize = 1000;
+      const totalSantri = await Santri.count(); // Ganti dengan jumlah santri yang sesuai
 
-  //     const dataExpired = getDataExpiredPenumpang(dataSantri, dataPenumpang);
-  //     res.json(dataExpired);
-  //     // const resultDestroy = await Promise.all(
-  //     //   dataExpired.map((d) => processUpdateDataSantri(d))
-  //     // );
+      const totalLoop = Math.ceil(totalSantri / batchSize);
 
-  //     // const berhasilTambah = resultTambah.filter((resultT) => resultT).length;
-  //     // const gagalTambah = resultTambah.filter((resultT) => !resultT).length;
-  //     // const berhasilDestroy = resultDestroy.filter((resultD) => resultD).length;
-  //     // const gagalDestory = resultDestroy.filter((resultD) => !resultD).length;
+      for (let i = 0; i < totalLoop; i++) {
+        const dataDbPuber = await Santri.findAll({
+          attributes: ["uuid"],
+          // Tambahkan bagian berikut untuk mengatur limit dan offset
+          limit: batchSize,
+          offset: i * batchSize,
+        });
+        const resultUpdate = await Promise.all(
+          dataDbPuber.map((d) => processDataRawSantri(d.uuid))
+        );
 
-  //     // totalBerhasilTambah += berhasilTambah;
-  //     // totalGagalTambah += gagalTambah;
-  //     // totalBerhasilDestroy += berhasilDestroy;
-  //     // totalGagalDestroy += gagalDestory;
+        totalBerhasilUpdate += resultUpdate.filter((result) => result).length;
+        totalGagalUpdate += resultUpdate.filter((result) => !result).length;
 
-  //     // console.log(
-  //     //   `didapat data baru : ${dataBaru.length} - diproses data baru  : ${resultTambah.length} | berhasil(${berhasilTambah})/gagal(${gagalTambah})`
-  //     // );
+        console.log(
+          `didapat data baru : ${dataDbPuber.length} - diproses data baru  : ${resultUpdate.length} | berhasil(${totalBerhasilUpdate})/gagal(${totalGagalUpdate})`
+        );
+      }
 
-  //     // console.log(
-  //     //   `Total berhasil data baru : ${totalBerhasilTambah}, Total gagal data baru : ${totalGagalTambah}`
-  //     // );
+      // console.log(
+      //   `Total berhasil data baru : ${totalBerhasilTambah}, Total gagal data baru : ${totalGagalTambah}`
+      // );
 
-  //     // console.log(
-  //     //   `didapat data expired : ${dataExpired.length} - diproses data expired : ${resultDestroy.length} | berhasil(${berhasilDestroy})/gagal(${gagalDestory})`
-  //     // );
+      // console.log(
+      //   `didapat data expired : ${dataExpired.length} - diproses data expired : ${resultDestroy.length} | berhasil(${berhasilDestroy})/gagal(${gagalDestory})`
+      // );
 
-  //     // console.log(
-  //     //   `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
-  //     // );
-  //     // responseHelper.syncSuccess(req, res);
-  //   } catch (err) {
-  //     responseHelper.serverError(req,
-  //       res,
-  //       err.message
-  //       // "Terjadi kesalahan saat koneksi ke PEDATREN"
-  //     );
-  //   }
-  // },
+      // console.log(
+      //   `Total berhasil data expired: ${totalBerhasilDestroy}, Total gagal: ${totalGagalDestroy}`
+      // );
+      responseHelper.syncSuccess(req, res);
+    } catch (err) {
+      responseHelper.serverError(
+        req,
+        res,
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
+      );
+    }
+  },
 
   updateUser: async (req, res) => {
     try {

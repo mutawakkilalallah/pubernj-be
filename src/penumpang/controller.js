@@ -150,11 +150,19 @@ module.exports = {
             model: Persyaratan,
             as: "persyaratan",
             where: {
-              ...(req.query.hak_pulang && {
-                lunas_bps: req.query.hak_pulang,
-                lunas_kosmara: req.query.hak_pulang,
-                tuntas_fa: req.query.hak_pulang,
-                bebas_kamtib: req.query.hak_pulang,
+              ...(req.query.hak_pulang === "Y" && {
+                lunas_bps: true,
+                lunas_kosmara: true,
+                tuntas_fa: true,
+                bebas_kamtib: true,
+              }),
+              ...(req.query.hak_pulang === "T" && {
+                [Op.or]: [
+                  { lunas_bps: false },
+                  { lunas_kosmara: false },
+                  { tuntas_fa: false },
+                  { bebas_kamtib: false },
+                ],
               }),
             },
           },
