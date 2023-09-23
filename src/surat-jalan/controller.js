@@ -288,10 +288,10 @@ module.exports = {
               // ...(req.role != "sysadmin" && {
               //   jenis_kelamin: "P",
               // }),
-              // ...(req.role === "biktren" && {
-              //   // jenis_kelamin: req.jenis_kelamin,
-              //   jenis_kelamin: "P",
-              // }),
+              ...(req.role === "biktren" && {
+                jenis_kelamin: req.jenis_kelamin,
+                // jenis_kelamin: "P",
+              }),
               // ...(req.role === "admin" && {
               //   jenis_kelamin: "X",
               // }),
@@ -673,10 +673,10 @@ module.exports = {
               // ...(req.role != "sysadmin" && {
               //   jenis_kelamin: "P",
               // }),
-              // ...(req.role === "biktren" && {
-              //   // jenis_kelamin: req.jenis_kelamin,
-              //   jenis_kelamin: "P",
-              // }),
+              ...(req.role === "biktren" && {
+                jenis_kelamin: req.jenis_kelamin,
+                // jenis_kelamin: "P",
+              }),
               // ...(req.role === "admin" && {
               //   jenis_kelamin: "X",
               // }),
