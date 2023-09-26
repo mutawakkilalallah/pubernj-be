@@ -174,9 +174,9 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        },
+        // where: {
+        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        // },
         include: [
           {
             model: Santri,
@@ -203,12 +203,12 @@ module.exports = {
               //   jenis_kelamin: "X",
               // }),
               // ----------------------------------------------------
-              ...(req.role === "wilayah" && {
-                alias_wilayah: req.wilayah,
-              }),
-              ...(req.role === "daerah" && {
-                id_blok: req.id_blok,
-              }),
+              // ...(req.role === "wilayah" && {
+              //   alias_wilayah: req.wilayah,
+              // }),
+              // ...(req.role === "daerah" && {
+              //   id_blok: req.id_blok,
+              // }),
               ...(req.role === "wilayah" && {
                 alias_wilayah: req.wilayah,
               }),
@@ -262,9 +262,9 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        },
+        // where: {
+        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        // },
         include: [
           {
             model: Santri,
@@ -344,9 +344,9 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        },
+        // where: {
+        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        // },
         include: [
           {
             model: Santri,
@@ -543,13 +543,13 @@ module.exports = {
     const offset = 0 + (page - 1) * limit;
     try {
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-          // jika admin hanya boleh pengurus putra **SEMENTARA**
-          ...(req.role === "admin" && {
-            dropspot_id: 106,
-          }),
-        },
+        // where: {
+        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        //   // jika admin hanya boleh pengurus putra **SEMENTARA**
+        //   ...(req.role === "admin" && {
+        //     dropspot_id: 106,
+        //   }),
+        // },
         include: [
           {
             model: Santri,
@@ -594,10 +594,10 @@ module.exports = {
             model: Persyaratan,
             as: "persyaratan",
             where: {
-              lunas_bps: true,
-              lunas_kosmara: true,
-              tuntas_fa: true,
-              bebas_kamtib: true,
+              // lunas_bps: true,
+              // lunas_kosmara: true,
+              // tuntas_fa: true,
+              // bebas_kamtib: true,
               is_izin: "T",
               is_cetak: "T",
             },
@@ -648,9 +648,9 @@ module.exports = {
     const offset = 0 + (page - 1) * limit;
     try {
       const data = await Penumpang.findAndCountAll({
-        where: {
-          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        },
+        // where: {
+        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        // },
         include: [
           {
             model: Santri,
