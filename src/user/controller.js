@@ -51,11 +51,7 @@ module.exports = {
       ];
 
       if (req.role === "sysadmin") {
-        filterRole.push(
-          { key: "sysadmin", value: "sysadmin" },
-          { key: "keuangan", value: "keuangan" },
-          { key: "bps", value: "bps" }
-        );
+        filterRole.push({ key: "sysadmin", value: "sysadmin" }, { key: "keuangan", value: "keuangan" }, { key: "bps", value: "bps" });
       }
 
       responseHelper.allData(req, res, page, limit, data, { role: filterRole });
@@ -85,14 +81,11 @@ module.exports = {
 
   getByNiup: async (req, res) => {
     try {
-      const response = await axios.get(
-        API_PEDATREN_URL + "/person/niup/" + req.params.niup,
-        {
-          headers: {
-            "x-api-key": API_PEDATREN_TOKEN,
-          },
-        }
-      );
+      const response = await axios.get(API_PEDATREN_URL + "/person/niup/" + req.params.niup, {
+        headers: {
+          "x-api-key": API_PEDATREN_TOKEN,
+        },
+      });
 
       responseHelper.oneData(req, res, response.data);
     } catch (err) {
@@ -125,39 +118,29 @@ module.exports = {
             if (existsUsername) {
               responseHelper.badRequest(req, res, "username sudah ada");
             } else {
-              const response = await axios.get(
-                API_PEDATREN_URL + "/person/niup/" + value.niup,
-                {
-                  headers: {
-                    "x-api-key": API_PEDATREN_TOKEN,
-                  },
-                }
-              );
+              const response = await axios.get(API_PEDATREN_URL + "/person/niup/" + value.niup, {
+                headers: {
+                  "x-api-key": API_PEDATREN_TOKEN,
+                },
+              });
 
               value.password = await bcrypt.hash(value.password, 10);
               value.nama_lengkap = response.data.nama_lengkap;
               value.jenis_kelamin = response.data.jenis_kelamin;
               value.type = "internal";
               if (value.role === "daerah") {
-                value.id_blok =
-                  response.data.domisili_santri[
-                    response.data.domisili_santri.length - 1
-                  ].id_blok;
-                value.blok =
-                  response.data.domisili_santri[
-                    response.data.domisili_santri.length - 1
-                  ].blok;
+                value.id_blok = response.data.domisili_santri[response.data.domisili_santri.length - 1].id_blok;
+                value.blok = response.data.domisili_santri[response.data.domisili_santri.length - 1].blok;
               }
               if (value.role === "wilayah") {
-                value.wilayah =
-                  response.data.domisili_santri[
-                    response.data.domisili_santri.length - 1
-                  ].wilayah;
-                value.alias_wilayah = response.data.domisili_santri[
-                  response.data.domisili_santri.length - 1
-                ].wilayah
-                  .toLowerCase()
-                  .replace(/ /g, "-");
+                const w = await axios.get(API_PEDATREN_URL + "/setting/wilayah/" + response.data.domisili_santri[response.data.domisili_santri.length - 1].id_wilayah, {
+                  headers: {
+                    "x-api-key": API_PEDATREN_TOKEN,
+                  },
+                });
+                value.alias_wilayah_pedatren = w.data.alias;
+                value.wilayah = response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah;
+                value.alias_wilayah = response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah.toLowerCase().replace(/ /g, "-");
               }
               if (value.role === "p4nj") {
                 const area = await Area.findOne({
@@ -250,9 +233,7 @@ module.exports = {
       if (!user) {
         responseHelper.notFound(req, res);
       } else {
-        const { error, value } = userValidation.updatePassword.validate(
-          req.body
-        );
+        const { error, value } = userValidation.updatePassword.validate(req.body);
 
         if (error) {
           responseHelper.badRequest(req, res, error.message);

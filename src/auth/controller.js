@@ -41,10 +41,7 @@ module.exports = {
                   Authorization: `Basic ${base64Auth}`,
                 },
               };
-              const response = await axios.get(
-                `${API_PEDATREN_URL}/auth/login`,
-                config
-              );
+              const response = await axios.get(`${API_PEDATREN_URL}/auth/login`, config);
               await data.update({
                 token_pedatren: response.headers["x-token"],
               });
@@ -57,6 +54,7 @@ module.exports = {
                 username: data.username,
                 jenis_kelamin: data.jenis_kelamin,
                 role: data.role,
+                alias_wilayah_pedatren: data.alias_wilayah_pedatren ? data.alias_wilayah_pedatren : null,
                 wilayah: data.alias_wilayah ? data.alias_wilayah : null,
                 id_blok: data.id_blok ? data.id_blok : null,
                 area: data.area_id ? data.area_id : null,
@@ -86,8 +84,7 @@ module.exports = {
       const auth = req.headers.authorization.split(" ")[1];
       const decodedAuth = Buffer.from(auth, "base64").toString();
       const [username, password] = decodedAuth.split(":");
-      const authToPedatren =
-        "Basic " + Buffer.from(username + ":" + password).toString("base64");
+      const authToPedatren = "Basic " + Buffer.from(username + ":" + password).toString("base64");
       const resp = await axios.get(`${API_PEDATREN_URL}/auth/login`, {
         headers: { Authorization: authToPedatren },
       });
@@ -107,14 +104,11 @@ module.exports = {
   },
   generateIzin: async (req, res) => {
     try {
-      const resp = await axios.get(
-        `${API_PEDATREN_URL}/person/1ccc14d9-f865-44a4-9d4f-f309493e6c3b`,
-        {
-          headers: {
-            "x-token": req.headers["x-token"],
-          },
-        }
-      );
+      const resp = await axios.get(`${API_PEDATREN_URL}/person/1ccc14d9-f865-44a4-9d4f-f309493e6c3b`, {
+        headers: {
+          "x-token": req.headers["x-token"],
+        },
+      });
       if (resp.status === 200) {
         const payload = {
           bermalam: "Y",
@@ -126,15 +120,11 @@ module.exports = {
           sampai_tanggal: "2023-09-07 17:00:00",
           sejak_tanggal: "2023-08-28 06:00:00",
         };
-        const respIzin = await axios.post(
-          `${API_PEDATREN_URL}/biktren-putra/perizinan/santri`,
-          payload,
-          {
-            headers: {
-              "x-token": req.headers["x-token"],
-            },
-          }
-        );
+        const respIzin = await axios.post(`${API_PEDATREN_URL}/biktren-putra/perizinan/santri`, payload, {
+          headers: {
+            "x-token": req.headers["x-token"],
+          },
+        });
         responseHelper.createdOrUpdated(req, res);
       }
     } catch (err) {

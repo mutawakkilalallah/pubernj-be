@@ -66,12 +66,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.STRING,
       },
-      status_kepulangan: {
-        allowNull: false,
-        type: DataTypes.ENUM,
-        values: ["rombongan", "non-rombongan"],
-        defaultValue: "non-rombongan",
-      },
       createdAt: {
         allowNull: false,
         field: "created_at",

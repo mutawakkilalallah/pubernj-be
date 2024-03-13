@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
+      alias_wilayah_pedatren: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
       alias_wilayah: {
         allowNull: true,
         type: DataTypes.STRING,
@@ -66,19 +70,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       role: {
         allowNull: false,
-        values: [
-          "sysadmin",
-          "admin",
-          "keuangan",
-          "bps",
-          "biktren",
-          "armada",
-          "p4nj",
-          "supervisor",
-          "wilayah",
-          "daerah",
-          "pendamping",
-        ],
+        values: ["sysadmin", "admin", "keuangan", "bps", "biktren", "armada", "p4nj", "supervisor", "wilayah", "daerah", "pendamping"],
         type: DataTypes.ENUM,
       },
       type: {

@@ -1,13 +1,5 @@
 const { Op } = require("sequelize");
-const {
-  Penumpang,
-  Santri,
-  Persyaratan,
-  User,
-  Dropspot,
-  Area,
-  LogPedatren,
-} = require("../../models");
+const { Penumpang, Santri, Persyaratan, User, Dropspot, Area, LogPedatren } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
 const validation = require("../../validations/surat-jalan-validation");
 const axios = require("axios");
@@ -42,21 +34,13 @@ async function prosesIzin(niup, userUuid, token) {
       });
       let timestamp;
       if (santri.jenis_kelamin == "L") {
-        timestamp = moment.tz(
-          penumpang.dropspot.jam_berangkat_pa,
-          "Asia/Jakarta"
-        );
+        timestamp = moment.tz(penumpang.dropspot.jam_berangkat_pa, "Asia/Jakarta");
       } else if (santri.jenis_kelamin == "P") {
-        timestamp = moment.tz(
-          penumpang.dropspot.jam_berangkat_pi,
-          "Asia/Jakarta"
-        );
+        timestamp = moment.tz(penumpang.dropspot.jam_berangkat_pi, "Asia/Jakarta");
       }
       const sejak_tanggal = timestamp.format("YYYY-MM-DD HH:mm:ss");
       santri.raw = JSON.parse(santri?.raw);
-      const dataSantri = santri?.raw?.santri.filter(
-        (item) => item.tanggal_akhir === null
-      );
+      const dataSantri = santri?.raw?.santri.filter((item) => item.tanggal_akhir === null);
       let form = {};
       if (santri.jenis_kelamin == "L") {
         form = {
@@ -88,9 +72,7 @@ async function prosesIzin(niup, userUuid, token) {
       var userData = jwt_decode(token, { header: true });
       let url;
       if (userData.scope[1].startsWith("wilayah-")) {
-        url = `${API_PEDATREN_URL}/wilayah/${userData.scope[1].substring(
-          8
-        )}/perizinan/santri`;
+        url = `${API_PEDATREN_URL}/wilayah/${userData.scope[1].substring(8)}/perizinan/santri`;
       } else if (userData.scope[1] != "admin") {
         url = `${API_PEDATREN_URL}/${userData.scope[1]}/perizinan/santri`;
       } else {
@@ -101,14 +83,11 @@ async function prosesIzin(niup, userUuid, token) {
           "x-token": token,
         },
       });
-      const respNew = await axios.get(
-        `${API_PEDATREN_URL}/person/${santri.uuid}`,
-        {
-          headers: {
-            "x-token": token,
-          },
-        }
-      );
+      const respNew = await axios.get(`${API_PEDATREN_URL}/person/${santri.uuid}`, {
+        headers: {
+          "x-token": token,
+        },
+      });
       await penumpang.update({
         id_perizinan: respNew.data.perizinan_santri[0].id,
       });
@@ -125,9 +104,7 @@ async function prosesIzin(niup, userUuid, token) {
   } catch (err) {
     await LogPedatren.create({
       user_uuid: userUuid,
-      message: `${niup} | ${
-        err.response ? err.response.data.message : err.message
-      }`,
+      message: `${niup} | ${err.response ? err.response.data.message : err.message}`,
     });
     return false;
   }
@@ -174,9 +151,9 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await Penumpang.findAndCountAll({
-        // where: {
-        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        // },
+        where: {
+          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        },
         include: [
           {
             model: Santri,
@@ -231,8 +208,6 @@ module.exports = {
               // lunas_kosmara: true,
               // tuntas_fa: true,
               // bebas_kamtib: true,
-              is_izin: "T",
-              is_cetak: "T",
             },
           },
           {
@@ -344,9 +319,9 @@ module.exports = {
       const offset = 0 + (page - 1) * limit;
 
       const data = await Penumpang.findAndCountAll({
-        // where: {
-        //   [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
-        // },
+        where: {
+          [Op.or]: [{ status_bayar: "lunas" }, { status_bayar: "lebih" }],
+        },
         include: [
           {
             model: Santri,
@@ -395,8 +370,8 @@ module.exports = {
               // lunas_kosmara: true,
               // tuntas_fa: true,
               // bebas_kamtib: true,
-              is_izin: "Y",
-              is_konfirmasi: "Y",
+              // is_izin: "Y",
+              // is_konfirmasi: "Y",
               ...(req.query.cetak && {
                 is_cetak: req.query.cetak,
               }),
@@ -443,10 +418,7 @@ module.exports = {
               Authorization: `Basic ${base64Auth}`,
             },
           };
-          const response = await axios.get(
-            `${API_PEDATREN_URL}/auth/login`,
-            config
-          );
+          const response = await axios.get(`${API_PEDATREN_URL}/auth/login`, config);
           value.password = btoa(value.password);
           await user.update({
             username_pedatren: value.username,
@@ -499,11 +471,7 @@ module.exports = {
         responseHelper.notFound(req, res);
       } else {
         if (!user.username_pedatren && user.password_pedatren) {
-          responseHelper.badRequest(
-            req,
-            res,
-            "akun anda belum terkait dengan pedatren"
-          );
+          responseHelper.badRequest(req, res, "akun anda belum terkait dengan pedatren");
         } else {
           const pass = atob(user.password_pedatren);
           const authString = `${user.username_pedatren}:${pass}`;
@@ -513,10 +481,7 @@ module.exports = {
               Authorization: `Basic ${base64Auth}`,
             },
           };
-          const response = await axios.get(
-            `${API_PEDATREN_URL}/auth/login`,
-            config
-          );
+          const response = await axios.get(`${API_PEDATREN_URL}/auth/login`, config);
           logger.loggerSucces(req, 200);
           res
             .status(200)
@@ -616,9 +581,7 @@ module.exports = {
         order: [["updated_at", "DESC"]],
       });
       const token = req.headers["x-pedatren-token"];
-      const result = await Promise.all(
-        data.rows.map((d) => prosesIzin(d.santri.niup, req.uuid, token))
-      );
+      const result = await Promise.all(data.rows.map((d) => prosesIzin(d.santri.niup, req.uuid, token)));
 
       const s = result.filter((r) => r).length;
       const f = result.filter((r) => !r).length;
@@ -716,9 +679,7 @@ module.exports = {
         order: [["updated_at", "DESC"]],
       });
       const token = req.headers["x-pedatren-token"];
-      await Promise.all(
-        data.rows.map((d) => konfirmasiIzin(d.id_perizinan, d.id, token))
-      );
+      await Promise.all(data.rows.map((d) => konfirmasiIzin(d.id_perizinan, d.id, token)));
       logger.loggerSucces(req, 200);
       res.status(200).json({
         code: 200,
@@ -776,21 +737,16 @@ module.exports = {
 
   getQrIzin: async (req, res) => {
     try {
-      const santri = await axios.get(
-        API_PEDATREN_URL + "/person/niup/" + req.params.niup,
-        {
-          headers: {
-            "x-token": req.headers["x-token"],
-          },
-        }
-      );
+      const santri = await axios.get(API_PEDATREN_URL + "/person/niup/" + req.params.niup, {
+        headers: {
+          "x-token": req.headers["x-token"],
+        },
+      });
 
       var userData = jwt_decode(req.headers["x-token"], { header: true });
       let url;
       if (userData.scope[1].startsWith("wilayah-")) {
-        url = `${API_PEDATREN_URL}/wilayah/${userData.scope[1].substring(
-          8
-        )}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
+        url = `${API_PEDATREN_URL}/wilayah/${userData.scope[1].substring(8)}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
       } else if (userData.scope[1] != "admin") {
         url = `${API_PEDATREN_URL}/${userData.scope[1]}/perizinan/santri/${santri.data.perizinan_santri[0].id}`;
       } else {
@@ -802,15 +758,12 @@ module.exports = {
         },
       });
 
-      const response = await axios.get(
-        API_PEDATREN_URL + perizinan.data.qrcode_url,
-        {
-          headers: {
-            "x-token": req.headers["x-token"],
-          },
-          responseType: "arraybuffer",
-        }
-      );
+      const response = await axios.get(API_PEDATREN_URL + perizinan.data.qrcode_url, {
+        headers: {
+          "x-token": req.headers["x-token"],
+        },
+        responseType: "arraybuffer",
+      });
       logger.loggerSucces(req, 200);
       responseHelper.imageQRCode(req, res, response.data);
     } catch (err) {

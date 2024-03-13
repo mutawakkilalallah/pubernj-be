@@ -45,23 +45,9 @@ router.get("/no-tagihan", allNoTagihan);
 router.get("/export-excel", exportExcel);
 router.get("/export-persyaratan", exportPersyaratan);
 router.get("/unduh-template", access.keuangan, unduhTemplate);
-router.post(
-  "/import-pembayaran",
-  access.keuangan,
-  upload.single("excelFile"),
-  importBayar
-);
-router.post(
-  "/compare-tagihan",
-  access.keuangan,
-  upload.single("excelFile"),
-  compareTagihan
-);
-router.post(
-  "/import-persyaratan",
-  upload.single("excelFile"),
-  importPersyaratan
-);
+router.post("/import-pembayaran", access.keuangan, upload.single("excelFile"), importBayar);
+router.post("/compare-tagihan", access.keuangan, upload.single("excelFile"), compareTagihan);
+router.post("/import-persyaratan", upload.single("excelFile"), importPersyaratan);
 
 router.post("/upload-berkas/:uuid", access.wilayah, uploadBerkas);
 
@@ -80,12 +66,7 @@ router.delete("/mahrom/:id", access.admin, deleteMahrom);
 router.delete("/berkas/:id", access.admin, deleteBerkas);
 router.delete("/:uuid", access.wilayah, lockdata.lockDropspot, deleteRombongan);
 
-router.put(
-  "/dropspot/:id",
-  access.wilayah,
-  lockdata.lockDropspot,
-  updateDropspot
-);
+router.put("/dropspot/:id", access.wilayah, lockdata.lockDropspot, updateDropspot);
 
 router.put("/pemberangkatan/:id", access.pendamping, keluarPos);
 

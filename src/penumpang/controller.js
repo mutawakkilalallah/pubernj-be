@@ -1,16 +1,5 @@
 const { Op } = require("sequelize");
-const {
-  Penumpang,
-  Area,
-  Dropspot,
-  Santri,
-  Armada,
-  User,
-  Periode,
-  Persyaratan,
-  Berkas,
-  sequelize,
-} = require("../../models");
+const { Penumpang, Area, Dropspot, Santri, Armada, User, Periode, Persyaratan, Berkas, sequelize } = require("../../models");
 const penumpangValidation = require("../../validations/penumpang-validation");
 const responseHelper = require("../../helpers/response-helper");
 const logger = require("../../helpers/logger");
@@ -157,12 +146,7 @@ module.exports = {
                 bebas_kamtib: true,
               }),
               ...(req.query.hak_pulang === "T" && {
-                [Op.or]: [
-                  { lunas_bps: false },
-                  { lunas_kosmara: false },
-                  { tuntas_fa: false },
-                  { bebas_kamtib: false },
-                ],
+                [Op.or]: [{ lunas_bps: false }, { lunas_kosmara: false }, { tuntas_fa: false }, { bebas_kamtib: false }],
               }),
             },
           },
@@ -257,9 +241,7 @@ module.exports = {
 
   updateArmada: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.updateArmada.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.updateArmada.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -285,9 +267,7 @@ module.exports = {
 
   deleteArmada: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.updateArmada.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.updateArmada.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -313,9 +293,7 @@ module.exports = {
 
   updateDropspot: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.updateDropspot.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.updateDropspot.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -326,11 +304,7 @@ module.exports = {
           },
         });
         if (penumpang.armada_id != null) {
-          responseHelper.badRequest(
-            req,
-            res,
-            "penumpang ini sudah dimasukkan ke dalam armada"
-          );
+          responseHelper.badRequest(req, res, "penumpang ini sudah dimasukkan ke dalam armada");
         } else {
           await penumpang.update({
             dropspot_id: value.dropspot_id,
@@ -385,9 +359,7 @@ module.exports = {
 
   updatePembayaran: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.updatePembayaran.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.updatePembayaran.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -410,15 +382,9 @@ module.exports = {
             penumpang.status_bayar = "lunas";
           } else if (penumpang.dropspot.harga < value.jumlah_bayar) {
             penumpang.status_bayar = "lebih";
-          } else if (
-            penumpang.dropspot.harga != 0 &&
-            value.jumlah_bayar === 0
-          ) {
+          } else if (penumpang.dropspot.harga != 0 && value.jumlah_bayar === 0) {
             penumpang.status_bayar = "belum-lunas";
-          } else if (
-            penumpang.dropspot.harga != 0 &&
-            penumpang.dropspot.harga > value.jumlah_bayar
-          ) {
+          } else if (penumpang.dropspot.harga != 0 && penumpang.dropspot.harga > value.jumlah_bayar) {
             penumpang.status_bayar = "kurang";
           }
           await penumpang.save();
@@ -432,9 +398,7 @@ module.exports = {
 
   updateKeberangkatan: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.updateKeberangkatan.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.updateKeberangkatan.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -466,8 +430,7 @@ module.exports = {
     // Set header row
     worksheet.mergeCells("A1:B1");
     worksheet.getCell("A1").value = "NAMA INSTITUSI";
-    worksheet.getCell("C1").value =
-      "NURUL JADID PAITON PROBOLINGGO, PONDOK PESANTREN";
+    worksheet.getCell("C1").value = "NURUL JADID PAITON PROBOLINGGO, PONDOK PESANTREN";
     worksheet.mergeCells("A2:B2");
     worksheet.getCell("A2").value = "NAMA TAGIHAN";
     worksheet.getCell("C2").value = "PUBER MAULID 2023";
@@ -538,18 +501,7 @@ module.exports = {
     });
 
     data.forEach((rowData, index) => {
-      worksheet.addRow([
-        index + 1,
-        rowData.santri.niup,
-        rowData.santri.nama_lengkap,
-        rowData.dropspot.harga + 1000,
-        400000,
-        400000 - rowData.dropspot.harga,
-        rowData.dropspot.harga,
-        1000,
-        0,
-        1000,
-      ]);
+      worksheet.addRow([index + 1, rowData.santri.niup, rowData.santri.nama_lengkap, rowData.dropspot.harga + 1000, 400000, 400000 - rowData.dropspot.harga, rowData.dropspot.harga, 1000, 0, 1000]);
     });
 
     // Simpan file Excel ke dalam buffer
@@ -557,14 +509,8 @@ module.exports = {
       .writeBuffer()
       .then((buffer) => {
         // Set header HTTP untuk melakukan download file
-        res.setHeader(
-          "Content-Disposition",
-          'attachment; filename="output.xlsx"'
-        );
-        res.setHeader(
-          "Content-Type",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
+        res.setHeader("Content-Disposition", 'attachment; filename="output.xlsx"');
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         // Kirim buffer sebagai respons
         logger.loggerSucces(req, 200);
@@ -593,11 +539,7 @@ module.exports = {
             const columnLValue = row.getCell("L").value;
             const columnJValue = row.getCell("J").value;
             // Pastikan nilai tidak kosong sebelum menambahkannya ke array
-            if (
-              columnCValue !== null &&
-              columnLValue !== null &&
-              columnJValue === "Lunas"
-            ) {
+            if (columnCValue !== null && columnLValue !== null && columnJValue === "Lunas") {
               data.push({
                 niup: columnCValue,
                 total_bayar: columnLValue - 1000,
@@ -632,10 +574,7 @@ module.exports = {
                 penumpang.status_bayar = "lebih";
               } else if (penumpang.dropspot.harga != 0 && d.total_bayar === 0) {
                 penumpang.status_bayar = "belum-lunas";
-              } else if (
-                penumpang.dropspot.harga != 0 &&
-                penumpang.dropspot.harga > d.total_bayar
-              ) {
+              } else if (penumpang.dropspot.harga != 0 && penumpang.dropspot.harga > d.total_bayar) {
                 penumpang.status_bayar = "kurang";
               }
               await penumpang.save();
@@ -660,11 +599,7 @@ module.exports = {
         responseHelper.createdOrUpdated(req, res);
       })
       .catch((err) => {
-        responseHelper.serverError(
-          req,
-          res,
-          "Terjadi kesalahan saat membaca file excel"
-        );
+        responseHelper.serverError(req, res, "Terjadi kesalahan saat membaca file excel");
       });
   },
 
@@ -732,11 +667,7 @@ module.exports = {
         responseHelper.createdOrUpdated(req, res);
       })
       .catch((err) => {
-        responseHelper.serverError(
-          req,
-          res,
-          "Terjadi kesalahan saat membaca file excel"
-        );
+        responseHelper.serverError(req, res, "Terjadi kesalahan saat membaca file excel");
       });
   },
 
@@ -818,19 +749,10 @@ module.exports = {
       const qrCodeImage = await qrcode.toDataURL(data, qrCodeOptions);
 
       // Menyimpan QR code ke dalam berkas di direktori qrcode
-      const qrCodePath = path.join(
-        __dirname,
-        "berkas",
-        "qrcode",
-        `${req.params.niup}.png`
-      );
+      const qrCodePath = path.join(__dirname, "berkas", "qrcode", `${req.params.niup}.png`);
 
       // Menulis gambar QR code ke dalam berkas
-      await fs.writeFileSync(
-        qrCodePath,
-        qrCodeImage.replace(/^data:image\/png;base64,/, ""),
-        "base64"
-      );
+      await fs.writeFileSync(qrCodePath, qrCodeImage.replace(/^data:image\/png;base64,/, ""), "base64");
 
       responseHelper.createdOrUpdated(req, res);
     } catch (err) {
@@ -840,12 +762,7 @@ module.exports = {
 
   getQR: async (req, res) => {
     try {
-      const qrCodePath = path.join(
-        __dirname,
-        "berkas",
-        "qrcode",
-        `${req.params.niup}.png`
-      );
+      const qrCodePath = path.join(__dirname, "berkas", "qrcode", `${req.params.niup}.png`);
       const qrCodeBuffer = fs.readFileSync(qrCodePath);
 
       res.writeHead(200, {
@@ -1100,9 +1017,7 @@ module.exports = {
 
   ubahPersyaratan: async (req, res) => {
     try {
-      const { error, value } = penumpangValidation.ubahPersyaratan.validate(
-        req.body
-      );
+      const { error, value } = penumpangValidation.ubahPersyaratan.validate(req.body);
       if (error) {
         responseHelper.badRequest(req, res, error.message);
       } else {
@@ -1256,21 +1171,14 @@ module.exports = {
 
       if (req.query.in_pembayaran === "true") {
         row["jumlah_bayar"] = d?.jumlah_bayar;
-        row["status_bayar"] =
-          d?.status_bayar != "belum-lunas"
-            ? d?.status_bayar?.toUpperCase()
-            : "BELUM LUNAS";
+        row["status_bayar"] = d?.status_bayar != "belum-lunas" ? d?.status_bayar?.toUpperCase() : "BELUM LUNAS";
       }
 
       if (req.query.in_persyaratan === "true") {
-        row["bps"] =
-          d?.persyaratan?.lunas_bps === true ? "LUNAS" : "BELUM LUNAS";
-        row["kosmara"] =
-          d?.persyaratan?.lunas_kosmara === true ? "LUNAS" : "BELUM LUNAS";
-        row["fa"] =
-          d?.persyaratan?.tuntas_fa === true ? "TUNTAS" : "BELUM TUNTAS";
-        row["kamtib"] =
-          d?.persyaratan?.bebas_kamtib === true ? "BEBAS" : "BELUM BEBAS";
+        row["bps"] = d?.persyaratan?.lunas_bps === true ? "LUNAS" : "BELUM LUNAS";
+        row["kosmara"] = d?.persyaratan?.lunas_kosmara === true ? "LUNAS" : "BELUM LUNAS";
+        row["fa"] = d?.persyaratan?.tuntas_fa === true ? "TUNTAS" : "BELUM TUNTAS";
+        row["kamtib"] = d?.persyaratan?.bebas_kamtib === true ? "BEBAS" : "BELUM BEBAS";
       }
 
       if (req.query.in_armada === "true") {
@@ -1287,14 +1195,8 @@ module.exports = {
       .writeBuffer()
       .then((buffer) => {
         // Set header HTTP untuk melakukan download file
-        res.setHeader(
-          "Content-Disposition",
-          'attachment; filename="data-penumpang.xlsx"'
-        );
-        res.setHeader(
-          "Content-Type",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
+        res.setHeader("Content-Disposition", 'attachment; filename="data-penumpang.xlsx"');
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         // Kirim buffer sebagai respons
         logger.loggerSucces(req, 200);
@@ -1317,9 +1219,7 @@ module.exports = {
         return responseHelper.notFound(req, res);
       }
 
-      const multerUpload = util.promisify(
-        multer({ storage: storageBerkas }).single("berkas")
-      );
+      const multerUpload = util.promisify(multer({ storage: storageBerkas }).single("berkas"));
 
       await multerUpload(req, res);
 
@@ -1438,8 +1338,7 @@ module.exports = {
           niup: d?.santri?.niup,
           nama: d?.santri?.nama_lengkap,
           jk: d?.santri?.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan",
-          status:
-            d?.persyaratan?.lunas_kosmara === true ? "lunas" : "belum lunas",
+          status: d?.persyaratan?.lunas_kosmara === true ? "lunas" : "belum lunas",
         };
         worksheet.addRow(row);
       }
@@ -1450,14 +1349,8 @@ module.exports = {
       .writeBuffer()
       .then((buffer) => {
         // Set header HTTP untuk melakukan download file
-        res.setHeader(
-          "Content-Disposition",
-          'attachment; filename="template.xlsx"'
-        );
-        res.setHeader(
-          "Content-Type",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
+        res.setHeader("Content-Disposition", 'attachment; filename="template.xlsx"');
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         // Kirim buffer sebagai respons
         logger.loggerSucces(req, 200);
@@ -1527,10 +1420,8 @@ module.exports = {
             });
             if (persyaratan) {
               if (req.query.jenis === "bps") {
-                persyaratan.lunas_bps =
-                  d.status != "belum-tuntas" ? true : false;
-                persyaratan.is_dispen_bps =
-                  d.status != "dispensasi" ? "T" : "Y";
+                persyaratan.lunas_bps = d.status != "tuntas" ? false : true;
+                // persyaratan.is_dispen_bps = d.status != "dispensasi" ? "T" : "Y";
               } else if (req.query.jenis === "kosmara") {
                 persyaratan.lunas_kosmara = d.status <= 0 ? true : false;
               }
@@ -1556,11 +1447,7 @@ module.exports = {
         responseHelper.createdOrUpdated(req, res);
       })
       .catch((err) => {
-        responseHelper.serverError(
-          req,
-          res,
-          "Terjadi kesalahan saat membaca file excel"
-        );
+        responseHelper.serverError(req, res, "Terjadi kesalahan saat membaca file excel");
       });
   },
 
@@ -1582,9 +1469,7 @@ module.exports = {
       } else {
         data.santri.raw = JSON.parse(data.santri.raw);
         const mahrom = [];
-        data.santri.raw.keluarga.map((item) =>
-          mahrom.push(item.uuid_person_lawan)
-        );
+        data.santri.raw.keluarga.map((item) => mahrom.push(item.uuid_person_lawan));
         const listMahrom = await Penumpang.findAll({
           include: {
             model: Santri,
@@ -1626,11 +1511,7 @@ module.exports = {
         });
 
         if (penumpang.dropspot_id != mahrom.dropspot_id) {
-          responseHelper.badRequest(
-            req,
-            res,
-            "antara santri dan mahromnya harus dalam satu dropspot"
-          );
+          responseHelper.badRequest(req, res, "antara santri dan mahromnya harus dalam satu dropspot");
         } else {
           await penumpang.update({
             mahrom_id: value.mahrom_id,

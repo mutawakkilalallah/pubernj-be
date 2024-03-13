@@ -14,6 +14,7 @@ module.exports = async (req, res, next) => {
       req.username = decoded.username;
       req.jenis_kelamin = decoded.jenis_kelamin;
       req.role = decoded.role;
+      req.alias_wilayah_pedatren = decoded.alias_wilayah_pedatren;
       req.wilayah = decoded.wilayah;
       req.id_blok = decoded.id_blok;
       req.area = decoded.area;

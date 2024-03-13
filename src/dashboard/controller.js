@@ -1,13 +1,5 @@
 require("dotenv").config();
-const {
-  Santri,
-  Penumpang,
-  Area,
-  Dropspot,
-  User,
-  Armada,
-  sequelize,
-} = require("../../models");
+const { Santri, Penumpang, Area, Dropspot, User, Armada, sequelize } = require("../../models");
 const responseHelper = require("../../helpers/response-helper");
 const logger = require("../../helpers/logger");
 
@@ -30,9 +22,9 @@ module.exports = {
         };
       }
 
-      const totalSantri = await Santri.count({
-        where: whereCondition,
-      });
+      // const totalSantri = await Santri.count({
+      //   where: whereCondition,
+      // });
       const totalPenumpang = await Penumpang.count({
         where: {
           ...(req.role === "pendamping" && {
@@ -58,7 +50,7 @@ module.exports = {
           },
         ],
       });
-      const totalTidakRombongan = totalSantri - totalPenumpang;
+      // const totalTidakRombongan = totalSantri - totalPenumpang;
       const totalArea = await Area.count();
       const totalDropspot = await Dropspot.count();
       const totalArmada = await Armada.count({
@@ -76,11 +68,11 @@ module.exports = {
         ],
       });
       const totalUser = await User.count();
-      const totalLogin = await User.count({
-        where: {
-          is_login: true,
-        },
-      });
+      // const totalLogin = await User.count({
+      //   where: {
+      //     is_login: true,
+      //   },
+      // });
 
       const statDrop = await sequelize.query(`SELECT 
           ds.id AS dropspot_id,
@@ -100,22 +92,11 @@ module.exports = {
       LIMIT 10
       `);
 
-      const kolom = [
-        "dropspot_nama",
-        "total_penumpang_putra_putri",
-        "total_penumpang_putra",
-        "total_penumpang_putri",
-      ];
+      const kolom = ["dropspot_nama", "total_penumpang_putra_putri", "total_penumpang_putra", "total_penumpang_putri"];
       const dataHasil = [kolom];
-      const truncateString = (str, maxLength) =>
-        str.length > maxLength ? str.slice(0, maxLength - 3) + "..." : str;
+      const truncateString = (str, maxLength) => (str.length > maxLength ? str.slice(0, maxLength - 3) + "..." : str);
       statDrop[0].forEach((item) => {
-        dataHasil.push([
-          truncateString(item["dropspot_nama"], 20),
-          parseInt(item["total_penumpang_putra_putri"]),
-          parseInt(item["total_penumpang_putra"]),
-          parseInt(item["total_penumpang_putri"]),
-        ]);
+        dataHasil.push([truncateString(item["dropspot_nama"], 20), parseInt(item["total_penumpang_putra_putri"]), parseInt(item["total_penumpang_putra"]), parseInt(item["total_penumpang_putri"])]);
       });
 
       logger.loggerSucces(req, 200);
@@ -124,14 +105,14 @@ module.exports = {
         message: "Berhasil mendapatkan semua data",
         data: {
           counter: {
-            totalSantri,
+            // totalSantri,
             totalPenumpang,
-            totalTidakRombongan,
+            // totalTidakRombongan,
             totalArea,
             totalDropspot,
             totalUser,
             totalArmada,
-            totalLogin,
+            // totalLogin,
           },
           stat: dataHasil,
         },
