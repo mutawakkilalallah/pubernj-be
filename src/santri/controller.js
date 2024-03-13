@@ -154,6 +154,7 @@ module.exports = {
   },
 
   dafatarRombongan: async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
       const { error, value } = santriValidation.updateDropspot.validate(req.body);
 
@@ -168,46 +169,59 @@ module.exports = {
         if (data) {
           responseHelper.badRequest(req, res, "santri sudah terdaftar di rombongan");
         } else {
-          console.log("x");
           const response = await axios.get(API_PEDATREN_URL + "/person/" + req.params.uuid, {
             headers: {
               "x-api-key": API_PEDATREN_TOKEN,
             },
           });
-
-          await Santri.create({
-            uuid: response.data.uuid,
-            niup: response.data.warga_pesantren.niup ? response.data.warga_pesantren.niup : null,
-            nama_lengkap: response.data.nama_lengkap,
-            jenis_kelamin: response.data.jenis_kelamin,
-            negara: response.data.negara ? response.data.negara : null,
-            provinsi: response.data.provinsi ? response.data.provinsi : null,
-            kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
-            kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
-            wilayah: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah : null,
-            alias_wilayah: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah.toLowerCase().replace(/ /g, "-") : null,
-            blok: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].blok : null,
-            id_blok: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].id_blok : null,
-            raw: JSON.stringify(response.data),
-          });
-
-          const periode = await Periode.findOne({
-            where: {
-              is_active: true,
+          await Santri.create(
+            {
+              uuid: response.data.uuid,
+              niup: response.data.warga_pesantren.niup ? response.data.warga_pesantren.niup : null,
+              nama_lengkap: response.data.nama_lengkap,
+              jenis_kelamin: response.data.jenis_kelamin,
+              negara: response.data.negara ? response.data.negara : null,
+              provinsi: response.data.provinsi ? response.data.provinsi : null,
+              kabupaten: response.data.kabupaten ? response.data.kabupaten : null,
+              kecamatan: response.data.kecamatan ? response.data.kecamatan : null,
+              wilayah: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah : null,
+              alias_wilayah: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].wilayah.toLowerCase().replace(/ /g, "-") : null,
+              blok: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].blok : null,
+              id_blok: response.data.domisili_santri ? response.data.domisili_santri[response.data.domisili_santri.length - 1].id_blok : null,
+              raw: JSON.stringify(response.data),
             },
-          });
-          const insertedpenumpang = await Penumpang.create({
-            santri_uuid: req.params.uuid,
-            dropspot_id: value.dropspot_id,
-            periode_id: periode.id,
-          });
-          await Persyaratan.create({
-            penumpang_id: insertedpenumpang.id,
-          });
+            { transaction }
+          );
+
+          const periode = await Periode.findOne(
+            {
+              where: {
+                is_active: true,
+              },
+            },
+            { transaction }
+          );
+          const insertedpenumpang = await Penumpang.create(
+            {
+              santri_uuid: req.params.uuid,
+              dropspot_id: value.dropspot_id,
+              periode_id: periode.id,
+            },
+            { transaction }
+          );
+          await Persyaratan.create(
+            {
+              penumpang_id: insertedpenumpang.id,
+            },
+            { transaction }
+          );
+          await transaction.commit();
           responseHelper.createdOrUpdated(req, res);
         }
       }
     } catch (err) {
+      await transaction.rollback();
+      console.log(err.message);
       responseHelper.serverError(req, res, err.message);
     }
   },

@@ -319,40 +319,47 @@ module.exports = {
   },
 
   deleteRombongan: async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
-      const data = await Penumpang.findOne({
+      const penumpang = await Penumpang.findOne({
         where: {
           santri_uuid: req.params.uuid,
         },
       });
-      if (!data) {
-        responseHelper.notFound(req, res);
-      } else {
-        const penumpang = await Penumpang.findOne({
-          where: {
-            santri_uuid: req.params.uuid,
-          },
-        });
-        await Persyaratan.destroy({
+      if (!penumpang) {
+        return responseHelper.notFound(req, res);
+      }
+      await Persyaratan.destroy(
+        {
           where: {
             penumpang_id: penumpang.id,
           },
-        });
-        await penumpang.destroy();
+        },
+        transaction
+      );
 
-        await Santri.update(
-          {
-            status_kepulangan: "non-rombongan",
+      await Penumpang.destroy(
+        {
+          where: {
+            santri_uuid: req.params.uuid,
           },
-          {
-            where: {
-              uuid: req.params.uuid,
-            },
-          }
-        );
-        responseHelper.deleted(req, res);
-      }
+        },
+        transaction
+      );
+
+      await Santri.destroy(
+        {
+          where: {
+            uuid: req.params.uuid,
+          },
+        },
+        transaction
+      );
+
+      await transaction.commit();
+      responseHelper.deleted(req, res);
     } catch (err) {
+      await transaction.rollback();
       responseHelper.serverError(req, res, err.message);
     }
   },
