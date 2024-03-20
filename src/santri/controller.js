@@ -147,8 +147,8 @@ module.exports = {
       responseHelper.serverError(
         req,
         res,
-        // err.message
-        "Terjadi kesalahan saat koneksi ke PEDATREN"
+        err.message
+        // "Terjadi kesalahan saat koneksi ke PEDATREN"
       );
     }
   },

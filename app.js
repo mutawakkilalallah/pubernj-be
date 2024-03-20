@@ -30,8 +30,7 @@ app.use(
   cors({
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    exposedHeaders:
-      "x_total_data, x_page_limt, x_total_page, x_current_page, X-Auth-Key",
+    exposedHeaders: "x_total_data, x_page_limt, x_total_page, x_current_page, X-Auth-Key",
   })
 );
 
@@ -45,7 +44,7 @@ app.get("/", async (req, res) => {
 app.use("/", authRouter);
 app.use("/dashboard", auth, dashboardRouter);
 app.use("/area", auth, areaRouter);
-app.use("/dropspot", auth, dropspotRouter);
+app.use("/dropspot", dropspotRouter);
 app.use("/armada", auth, armadaRouter);
 app.use("/santri", auth, santriRouter);
 app.use("/penumpang", auth, penumpangRouter);
