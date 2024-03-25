@@ -22,8 +22,7 @@ module.exports = {
     }),
   }),
   updatePendamping: Joi.object({
-    user_uuid: Joi.required().messages({
-      "any.required": "pendamping harus diisi",
-    }),
+    pendamping: Joi.required(),
+    nomer_hp: Joi.required(),
   }),
 };

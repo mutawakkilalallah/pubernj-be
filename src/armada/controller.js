@@ -1,13 +1,5 @@
 const { Op } = require("sequelize");
-const {
-  Dropspot,
-  Area,
-  Penumpang,
-  Armada,
-  Santri,
-  User,
-  Periode,
-} = require("../../models");
+const { Dropspot, Area, Penumpang, Armada, Santri, User, Periode } = require("../../models");
 const armadaValidation = require("../../validations/armada-validation");
 const responseHelper = require("../../helpers/response-helper");
 
@@ -138,9 +130,7 @@ module.exports = {
 
   create: async (req, res) => {
     try {
-      const { error, value } = armadaValidation.createAndUpdate.validate(
-        req.body
-      );
+      const { error, value } = armadaValidation.createAndUpdate.validate(req.body);
 
       if (error) {
         responseHelper.badRequest(req, res, error.message);
@@ -154,9 +144,7 @@ module.exports = {
             as: "area",
           },
         });
-        value.nama = `${value.type.toUpperCase()}-${value.jenis.toUpperCase()} ${
-          drop.nama
-        } ${value.nama}`;
+        value.nama = `${value.type.toUpperCase()}-${value.jenis.toUpperCase()} ${drop.nama} ${value.nama}`;
         const periode = await Periode.findOne({
           where: {
             is_active: true,
@@ -183,9 +171,7 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(req, res);
       } else {
-        const { error, value } = armadaValidation.createAndUpdate.validate(
-          req.body
-        );
+        const { error, value } = armadaValidation.createAndUpdate.validate(req.body);
         if (error) {
           responseHelper.badRequest(req, res, error.message);
         } else {
@@ -225,9 +211,7 @@ module.exports = {
           try {
             const [numUpdated, updatedArmada] = await Armada.update(
               {
-                nama: `${a.type.toUpperCase()}-${a.jenis.toUpperCase()} ${
-                  a.dropspot.nama
-                } ${counter}`,
+                nama: `${a.type.toUpperCase()}-${a.jenis.toUpperCase()} ${a.dropspot.nama} ${counter}`,
               },
               {
                 where: {
@@ -262,13 +246,14 @@ module.exports = {
       if (!data) {
         responseHelper.notFound(req, res);
       } else {
-        const { error, value } = armadaValidation.updatePendamping.validate(
-          req.body
-        );
+        const { error, value } = armadaValidation.updatePendamping.validate(req.body);
         if (error) {
           responseHelper.badRequest(req, res, error.message);
         } else {
-          await data.update(value);
+          await data.update({
+            pendamping: req.body.pendamping,
+            nomer_hp: req.body.nomer_hp,
+          });
 
           responseHelper.createdOrUpdated(req, res);
         }

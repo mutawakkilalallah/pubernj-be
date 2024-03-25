@@ -77,6 +77,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BIGINT,
         defaultValue: 0,
       },
+      pendamping: {
+        allowNull: true,
+        type: DataTypes.STRING,
+      },
+      nomer_hp: {
+        allowNull: true,
+        type: DataTypes.BIGINT,
+      },
       createdAt: {
         allowNull: false,
         field: "created_at",
